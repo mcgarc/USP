@@ -27,7 +27,7 @@ class TestWireMethods(unittest.TestCase):
         np.testing.assert_array_equal(self.wire.end, np.array(self.end))
         self.assertEqual(self.wire.current, self.current)
 
-    def test_field(self):
+    def test_field_simple(self):
         """
         Test the field method.
 
@@ -40,6 +40,20 @@ class TestWireMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.wire.field(r),
                                              magnitude * z_hat
                                              )
+
+    def test_field_simple_reverse(self):
+        """
+        Test the field method when the wire current is reversed
+        """
+        self.wire.set_current(-1)
+        r = [0, 1, 0]
+        magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
+        z_hat = np.array([0, 0, 1])
+        np.testing.assert_array_almost_equal(self.wire.field(r),
+                                             -1 * magnitude * z_hat
+                                             )
+
+
         
 
 
