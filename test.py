@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import scipy.constants as spc
 
 from wire import WireSegment
 
@@ -33,9 +34,8 @@ class TestWireMethods(unittest.TestCase):
         This is a simple test case, direction should be in z, and the magnitude
         can be found analytically
         """
-        mu0 = 1
         r = [0, 1, 0]
-        magnitude = mu0 / (2 * np.sqrt(2) * np.pi)
+        magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
         z_hat = np.array([0, 0, 1])
         np.testing.assert_array_almost_equal(self.wire.field(r),
                                              magnitude * z_hat
