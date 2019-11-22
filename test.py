@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import scipy.constants as spc
 
-from wire import WireSegment
+from wire import WireSegment, WireCluster
 
 class TestWireMethods(unittest.TestCase):
 
@@ -54,7 +54,36 @@ class TestWireMethods(unittest.TestCase):
                                              )
 
 
-        
+class TestWireClusterMethods(unittest.TestCase):
+
+    def setUp(self):
+        # setup parallel wire cluster
+        wire_top = WireSegment([-1, 1, 0], [1, 1, 0], 1)
+        wire_bot = WireSegment([-1,-1, 0], [1,-1, 0], 1)
+        self.cluster_parallel = WireCluster([wire_top, wire_bot])
+        # And anti-parallel
+        wire_top = WireSegment([-1, 1, 0], [1, 1, 0], 1)
+        wire_bot = WireSegment([-1,-1, 0], [1,-1, 0], -1)
+        self.cluster_antiparralel = WireCluster([wire_bot, wire_top])
+
+    def test_field_parallel_simple(self):
+        """
+        Field at origin for parallel case can be determined analytically
+        """
+        r = [0, 0, 0] # origin
+        magnitude = spc.mu_0 / (np.sqrt(2) * np.pi) # analytically deterimed
+        z_hat = np.array([0, 0, 1])
+        np.testing.assert_array_almost_equal(self.cluster_parallel.field(r),
+                                             magnitude * z_hat
+                                             )
+
+    def test_field_antiparalell_simple(self):
+        """
+        Field at the origin for antiparallel case is zero
+        """
+        r = [0, 0, 0] # origin
+        field_origin = self.cluster_antiparralel.field(r)
+        np.testing.assert_array_almost_equal(field_origin, np.zeros(3))
 
 
 if __name__ == '__main__':

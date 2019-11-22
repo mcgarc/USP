@@ -74,7 +74,30 @@ class WireSegment:
         sin_end = np.sqrt(1 - cos_end**2)
         mag = spc.mu_0 * self.current * (sin_end + sin_start) / (4*np.pi*a_norm)
         return mag * direction
-        
 
 
+class WireCluster:
+    """
+    Holds a list of WireSegments. Can be used to find the fields of all of them
+    by taking the sum of each segment's contribution.
+    """
+    def __init__(self, wires):
+        self.set_wires(wires)
 
+    def set_wires(self, wires):
+        """
+        Check that each element of the list is a WireSegment
+        """
+        for wire in wires:
+            if type(wire) != WireSegment:
+                raise ValueError(
+                    'All wires in cluster must have type WireSegment'
+                    )
+        self._wires = wires.copy()
+
+    def field(self, r):
+        """
+        Get cluster field by summing each segment's contribution
+        """
+        field = [ wire.field(r) for wire in self._wires ]
+        return sum(field)
