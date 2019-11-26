@@ -4,13 +4,26 @@ import scipy.constants as spc
 
 class WireSegment:
     """
-    Simulates a segment of straight wire
+    Simulates a segment of straight wire. Initialise with a start and end (3
+    vectors) and current (scalar)
     """
 
     def __init__(self, start, end, current):
         self.set_start(start)
         self.set_end(end)
         self.set_current(current)
+
+    def __eq__(self, other):
+        """
+        Override built in method. If start, end and current are the same then
+        return True. Otherwise return False
+        """
+        if isinstance(other, WireSegment):
+            if self.current == other.current:
+                if np.array_equal(self.start, other.start):
+                    if np.array_equal(self.end, other.end):
+                        return True
+        return False
 
     @property
     def start(self):
@@ -83,6 +96,27 @@ class WireCluster:
     """
     def __init__(self, wires):
         self.set_wires(wires)
+
+    def __eq__(self, other):
+        """
+        Override built in equality check. If two WireClusters have all equal
+        wires then return True, otherwise return False
+        """
+        if isinstance(other, WireCluster):
+            if self.length == other.length:
+                for _ in range(len(self.length)):
+                    if self.wires[_] != other.wires[_]:
+                        return False
+                return True
+        return False
+
+    @property
+    def wires(self):
+        return self._wires
+
+    @property
+    def length(self):
+        return len(self.wires)
 
     def set_wires(self, wires):
         """

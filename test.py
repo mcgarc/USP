@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import scipy.constants as spc
 
-from wire import WireSegment, WireCluster
+import wire
 
 class TestWireMethods(unittest.TestCase):
 
@@ -13,7 +13,7 @@ class TestWireMethods(unittest.TestCase):
         self.start = [-1, 0, 0]
         self.end = [1, 0, 0]
         self.current = 1
-        self.wire = WireSegment(self.start, self.end, self.current)
+        self.wire = wire.WireSegment(self.start, self.end, self.current)
 
     def tearDown(self):
         pass
@@ -26,6 +26,12 @@ class TestWireMethods(unittest.TestCase):
         np.testing.assert_array_equal(self.wire.start, np.array(self.start))
         np.testing.assert_array_equal(self.wire.end, np.array(self.end))
         self.assertEqual(self.wire.current, self.current)
+
+    def test_equality(self):
+        same_wire = wire.WireSegment(self.start, self.end, self.current)
+        self.assertEqual(self.wire, same_wire)
+        different_wire = wire.WireSegment([-5, 0, 0], [0, 0, 3], -2)
+        self.assertNotEqual(self.wire, different_wire)
 
     def test_field_simple(self):
         """
@@ -58,13 +64,16 @@ class TestWireClusterMethods(unittest.TestCase):
 
     def setUp(self):
         # setup parallel wire cluster
-        wire_top = WireSegment([-1, 1, 0], [1, 1, 0], 1)
-        wire_bot = WireSegment([-1,-1, 0], [1,-1, 0], 1)
-        self.cluster_parallel = WireCluster([wire_top, wire_bot])
+        wire_top = wire.WireSegment([-1, 1, 0], [1, 1, 0], 1)
+        wire_bot = wire.WireSegment([-1,-1, 0], [1,-1, 0], 1)
+        self.cluster_parallel = wire.WireCluster([wire_top, wire_bot])
         # And anti-parallel
-        wire_top = WireSegment([-1, 1, 0], [1, 1, 0], 1)
-        wire_bot = WireSegment([-1,-1, 0], [1,-1, 0], -1)
-        self.cluster_antiparralel = WireCluster([wire_bot, wire_top])
+        wire_top = wire.WireSegment([-1, 1, 0], [1, 1, 0], 1)
+        wire_bot = wire.WireSegment([-1,-1, 0], [1,-1, 0], -1)
+        self.cluster_antiparralel = wire.WireCluster([wire_bot, wire_top])
+
+    def test_equality(self):
+        raise NotImplemented
 
     def test_field_parallel_simple(self):
         """
