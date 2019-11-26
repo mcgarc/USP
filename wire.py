@@ -104,7 +104,7 @@ class WireCluster:
         """
         if isinstance(other, WireCluster):
             if self.length == other.length:
-                for _ in range(len(self.length)):
+                for _ in range(self.length):
                     if self.wires[_] != other.wires[_]:
                         return False
                 return True

@@ -70,10 +70,12 @@ class TestWireClusterMethods(unittest.TestCase):
         # And anti-parallel
         wire_top = wire.WireSegment([-1, 1, 0], [1, 1, 0], 1)
         wire_bot = wire.WireSegment([-1,-1, 0], [1,-1, 0], -1)
-        self.cluster_antiparralel = wire.WireCluster([wire_bot, wire_top])
+        self.cluster_antiparallel = wire.WireCluster([wire_bot, wire_top])
 
     def test_equality(self):
-        raise NotImplemented
+        self.assertEqual(self.cluster_parallel, self.cluster_parallel)
+        self.assertEqual(self.cluster_antiparallel, self.cluster_antiparallel)
+        self.assertNotEqual(self.cluster_parallel, self.cluster_antiparallel)
 
     def test_field_parallel_simple(self):
         """
@@ -91,7 +93,7 @@ class TestWireClusterMethods(unittest.TestCase):
         Field at the origin for antiparallel case is zero
         """
         r = [0, 0, 0] # origin
-        field_origin = self.cluster_antiparralel.field(r)
+        field_origin = self.cluster_antiparallel.field(r)
         np.testing.assert_array_almost_equal(field_origin, np.zeros(3))
 
 
