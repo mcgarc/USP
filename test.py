@@ -96,6 +96,20 @@ class TestWireClusterMethods(unittest.TestCase):
         field_origin = self.cluster_antiparallel.field(r)
         np.testing.assert_array_almost_equal(field_origin, np.zeros(3))
 
+class TestZWireMethods(unittest.TestCase):
+
+    def setUp(self):
+        self.end_length = 1e3
+        self.z_wire = wire.ZWire(1, 1, end_length=1e3)
+
+    def test_zwire_init(self):
+        """
+        Test that the zwire initialises in the expected way
+        """
+        axis = self.z_wire.wires[1]
+        axis_expect = wire.WireSegment([0,-0.5, 0], [0, 0.5, 0], 1)
+        self.assertEqual(axis, axis_expect)
+
 
 if __name__ == '__main__':
     unittest.main()

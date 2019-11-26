@@ -135,3 +135,23 @@ class WireCluster:
         """
         field = [ wire.field(r) for wire in self._wires ]
         return sum(field)
+
+
+class ZWire(WireCluster):
+    """
+    A WireCluster forming a single Z wire trap
+    """
+
+    def __init__(self, current, axial_length, end_length=5e2):
+        wires = self.create_z_wires(current, axial_length, end_length)
+        self.set_wires(wires)
+        # TODO Orientation
+        # TODO Position (including height)
+
+    def create_z_wires(self, current, axial_length, end_length):
+        al = float(axial_length)
+        el = float(end_length)
+        axis = WireSegment([0, -al/2, 0], [0, al/2, 0], current)
+        end_left = WireSegment([-el, -al/2, 0], [0, -al/2, 0], current)
+        end_right = WireSegment([0, al/2, 0], [el , al/2, 0], current)
+        return [end_left, axis, end_right]
