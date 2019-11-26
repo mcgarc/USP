@@ -99,16 +99,26 @@ class TestWireClusterMethods(unittest.TestCase):
 class TestZWireMethods(unittest.TestCase):
 
     def setUp(self):
-        self.end_length = 1e3
-        self.z_wire = wire.ZWire(1, 1, end_length=1e3)
+        self.end_length = 10
+        self.z_wire = wire.ZWire(1, 1, end_length=self.end_length)
 
-    def test_zwire_init(self):
+    def test_init(self):
         """
         Test that the zwire initialises in the expected way
         """
+        # TODO Check non-axial wires too
         axis = self.z_wire.wires[1]
         axis_expect = wire.WireSegment([0,-0.5, 0], [0, 0.5, 0], 1)
         self.assertEqual(axis, axis_expect)
+
+    def test_field_direction(self):
+        """
+        Check that the field above the origin has no z component
+        """
+        heights = np.logspace(-5, 1, 10)
+        for h in heights:
+            z_field = self.z_wire.field([0, 0, h])[2]
+            self.assertEqual(z_field, 0)
 
 
 if __name__ == '__main__':

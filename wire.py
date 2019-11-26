@@ -73,17 +73,21 @@ class WireSegment:
         a = self.start - r + param * self.wire_vector
         a_norm = np.linalg.norm(a)
         # Field direction is normal to the wire-point plane
-        # TODO check sign!
-        direction = np.cross(self.wire_vector, r - self.start)
-        direction = direction / np.sqrt(np.dot(direction, direction))
-        # Magnitude from the standard formula
         start_rel = r - self.start
+        direction = np.cross(self.wire_vector, start_rel)
+        direction = direction / np.linalg.norm(direction)
+        # Magnitude from the standard formula
         cos_start = np.dot(start_rel, a)
         cos_start /= (np.linalg.norm(start_rel) * a_norm)
+        # Avoid floating point errors by checking here if cos_start is too big
+        if cos_start**2 > 1:
+            cos_start = 1
         sin_start = np.sqrt(1 - cos_start**2)
         end_rel = r - self.end
         cos_end = np.dot(end_rel, a)
         cos_end /= (np.linalg.norm(end_rel) * a_norm)
+        if cos_end**2 > 1:
+            cos_end = 1
         sin_end = np.sqrt(1 - cos_end**2)
         mag = spc.mu_0 * self.current * (sin_end + sin_start) / (4*np.pi*a_norm)
         return mag * direction
