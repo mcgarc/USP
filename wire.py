@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.constants as spc
 
+import utils
 
 class WireSegment:
     """
@@ -48,10 +49,7 @@ class WireSegment:
         """
         Ensure a vector is of the right length and format before setting it
         """
-        vector = np.array(vector)
-        if len(vector) != 3:
-            raise ValueError(f'Vector should have length {length}')
-        return vector
+        return utils.clean_vector(vector, length)
 
     def set_start(self, start):
         self._start = self._clean_vector(start)
