@@ -1,3 +1,6 @@
+import warnings
+
+
 class AbstractCurrentProfile:
     """
     Abstract class describing the change of a current through time
@@ -5,6 +8,18 @@ class AbstractCurrentProfile:
 
     def __init__(self):
         pass
+
+    def __eq__(self, other):
+        """
+        Should override built in equality method
+        """
+        warnings.warn(
+                'Current profile uses built-in equality method',
+                UserWarning
+                )
+        return super().__eq__(other)
+
+        
 
     def current(self, t):
         """
