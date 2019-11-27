@@ -3,8 +3,12 @@ import numpy as np
 import scipy.constants as spc
 
 import wire
+import current
 
 class TestWireSegmentMethods(unittest.TestCase):
+    """
+    Test wire segment methods with a constant current
+    """
 
     def setUp(self):
         """
@@ -12,11 +16,8 @@ class TestWireSegmentMethods(unittest.TestCase):
         """
         self.start = [-1, 0, 0]
         self.end = [1, 0, 0]
-        self.current = 1
-        self.wire = wire.WireSegment(self.start, self.end, self.current)
-
-    def tearDown(self):
-        pass
+        self.current = current.ConstantCurrent(1)
+        self.wire = wire.WireSegment(self.current, self.start, self.end)
 
     def test_properties(self):
         """
@@ -28,10 +29,20 @@ class TestWireSegmentMethods(unittest.TestCase):
         self.assertEqual(self.wire.current, self.current)
 
     def test_equality(self):
-        same_wire = wire.WireSegment(self.start, self.end, self.current)
+        same_wire = wire.WireSegment(self.current, self.start, self.end)
         self.assertEqual(self.wire, same_wire)
         different_wire = wire.WireSegment([-5, 0, 0], [0, 0, 3], -2)
         self.assertNotEqual(self.wire, different_wire)
+
+    def test_set_current(self):
+        """
+        Cannot set int as current (must be of type AbstractCurrentProfile)
+        """
+        self.assertRaises(ValueError, self.wire.set_current(1))
+        cur = 5
+        new_current = current.ConstantCurrent(cur)
+        self.wire.set_current(new_current)
+        self.assertSetEqual(self.wire.current.current(0), cur)
 
     def test_field_simple(self):
         """
@@ -43,7 +54,7 @@ class TestWireSegmentMethods(unittest.TestCase):
         r = [0, 1, 0]
         magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
         z_hat = np.array([0, 0, 1])
-        np.testing.assert_array_almost_equal(self.wire.field(r),
+        np.testing.assert_array_almost_equal(self.wire.field(0, r),
                                              magnitude * z_hat
                                              )
 
@@ -51,7 +62,8 @@ class TestWireSegmentMethods(unittest.TestCase):
         """
         Test the field method when the wire current is reversed
         """
-        self.wire.set_current(-1)
+        current_nve = current.ConstantCurrent(-1)
+        self.wire.set_current(current_nve)
         r = [0, 1, 0]
         magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
         z_hat = np.array([0, 0, 1])
@@ -64,12 +76,14 @@ class TestWireClusterMethods(unittest.TestCase):
 
     def setUp(self):
         # setup parallel wire cluster
-        wire_top = wire.WireSegment([-1, 1, 0], [1, 1, 0], 1)
-        wire_bot = wire.WireSegment([-1,-1, 0], [1,-1, 0], 1)
+        current_pve = current.ConstantCurrent(1)
+        current_nve = current.ConstantCurrent(-1)
+        wire_top = wire.WireSegment(current_pve, [-1, 1, 0], [1, 1, 0])
+        wire_bot = wire.WireSegment(current_pve, [-1,-1, 0], [1,-1, 0])
         self.cluster_parallel = wire.WireCluster([wire_top, wire_bot])
         # And anti-parallel
-        wire_top = wire.WireSegment([-1, 1, 0], [1, 1, 0], 1)
-        wire_bot = wire.WireSegment([-1,-1, 0], [1,-1, 0], -1)
+        wire_top = wire.WireSegment(current_pve, [-1, 1, 0], [1, 1, 0])
+        wire_bot = wire.WireSegment(current_nve, [-1,-1, 0], [1,-1, 0])
         self.cluster_antiparallel = wire.WireCluster([wire_bot, wire_top])
 
     def test_equality(self):
@@ -100,7 +114,12 @@ class TestZWireMethods(unittest.TestCase):
 
     def setUp(self):
         self.end_length = 10
-        self.z_wire = wire.ZWire(1, 1, end_length=self.end_length)
+        self.current = current.ConstantCurrent(1)
+        self.al = 1.
+        self.z_wire = wire.ZWire(self.current,
+                                 self.al,
+                                 end_length=self.end_length
+                                 )
 
     def test_init(self):
         """
@@ -108,7 +127,10 @@ class TestZWireMethods(unittest.TestCase):
         """
         # TODO Check non-axial wires too
         axis = self.z_wire.wires[1]
-        axis_expect = wire.WireSegment([0,-0.5, 0], [0, 0.5, 0], 1)
+        axis_expect = wire.WireSegment(self.current,
+                                       [0, -self.al/2, 0],
+                                       [0, self.al/2, 0]
+                                       )
         self.assertEqual(axis, axis_expect)
 
     def test_field_direction(self):
@@ -117,5 +139,5 @@ class TestZWireMethods(unittest.TestCase):
         """
         heights = np.logspace(-5, 1, 10)
         for h in heights:
-            z_field = self.z_wire.field([0, 0, h])[2]
+            z_field = self.z_wire.field(0, [0, 0, h])[2]
             self.assertEqual(z_field, 0)
