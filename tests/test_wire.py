@@ -31,18 +31,25 @@ class TestWireSegmentMethods(unittest.TestCase):
     def test_equality(self):
         same_wire = wire.WireSegment(self.current, self.start, self.end)
         self.assertEqual(self.wire, same_wire)
-        different_wire = wire.WireSegment([-5, 0, 0], [0, 0, 3], -2)
+        # Check with same current
+        same_current = current.ConstantCurrent(self.current.current(0))
+        same_wire = wire.WireSegment(same_current, self.start, self.end)
+        self.assertEqual(self.wire, same_wire)
+        # Check with different current
+        diff_current = current.ConstantCurrent(-2)
+        different_wire = wire.WireSegment(diff_current, [-5, 0, 0], [0, 0, 3])
         self.assertNotEqual(self.wire, different_wire)
 
     def test_set_current(self):
         """
         Cannot set int as current (must be of type AbstractCurrentProfile)
         """
-        self.assertRaises(ValueError, self.wire.set_current(1))
+        with self.assertRaises(ValueError):
+            self.wire.set_current(1)
         cur = 5
         new_current = current.ConstantCurrent(cur)
         self.wire.set_current(new_current)
-        self.assertSetEqual(self.wire.current.current(0), cur)
+        self.assertEqual(self.wire.current.current(0), cur)
 
     def test_field_simple(self):
         """
@@ -67,7 +74,7 @@ class TestWireSegmentMethods(unittest.TestCase):
         r = [0, 1, 0]
         magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
         z_hat = np.array([0, 0, 1])
-        np.testing.assert_array_almost_equal(self.wire.field(r),
+        np.testing.assert_array_almost_equal(self.wire.field(0, r),
                                              -1 * magnitude * z_hat
                                              )
 
@@ -98,7 +105,7 @@ class TestWireClusterMethods(unittest.TestCase):
         r = [0, 0, 0] # origin
         magnitude = spc.mu_0 / (np.sqrt(2) * np.pi) # analytically deterimed
         z_hat = np.array([0, 0, 1])
-        np.testing.assert_array_almost_equal(self.cluster_parallel.field(r),
+        np.testing.assert_array_almost_equal(self.cluster_parallel.field(0, r),
                                              magnitude * z_hat
                                              )
 
@@ -107,7 +114,7 @@ class TestWireClusterMethods(unittest.TestCase):
         Field at the origin for antiparallel case is zero
         """
         r = [0, 0, 0] # origin
-        field_origin = self.cluster_antiparallel.field(r)
+        field_origin = self.cluster_antiparallel.field(0, r)
         np.testing.assert_array_almost_equal(field_origin, np.zeros(3))
 
 class TestZWireMethods(unittest.TestCase):
