@@ -23,6 +23,13 @@ class Particle:
     def m(self):
         return self._m
 
+    @property
+    def Q(self):
+        """
+        Q is the 6-vector position in phasespace of form Q = (r, v)
+        """
+        return np.concatenate((self.r, self.v))
+
     def _clean_vector(self, vector, length=3):
         """
         Ensure a vector is of the right length and format before setting it
@@ -40,5 +47,3 @@ class Particle:
 
     def set_m(self, m):
         self._m = m
-
-
