@@ -3,29 +3,13 @@ import trap
 import wire
 import current
 
+from utils import grad
+
 import scipy.integrate as integ
 import numpy as np
 
-DX = 0.001
 
-def grad(f, t, r, direction, delta=DX):
-    r = np.array(r)
-    if direction == 'x':
-        i = 0
-    elif direction == 'y':
-        i = 1
-    elif direction == 'z':
-        i = 2
-    else:
-        quit() # TODO error
-    direction = [0, 0, 0]
-    direction[i] = 1
-    delta_plus = r + delta * np.array(direction)
-    delta_minus = r - delta * np.array(direction)
-    return (f(t, delta_plus) - f(t, delta_minus))
-
-
-def fun(t, Q, potential, delta=DX):
+def fun(t, Q, potential):
     """
     Q = (r, v) is the 6-vector of position in phase space
     """
@@ -64,7 +48,7 @@ def main():
     ans = integ.RK45(fun2, 0, mol.Q, t_end, vectorized=True, max_step=max_step)
     while ans.t < t_end:
         ans.step()
-        print(ans.y[1])
+        print(ans.y[:3])
 
 
 if __name__ == '__main__':
