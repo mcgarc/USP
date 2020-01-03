@@ -57,7 +57,7 @@ class TestRampCurrent(unittest.TestCase):
         and 0 otherwise
         """
         self.curs = [1]
-        self.times = [0, 1, 2]
+        self.times = [0, 1, 2, 3]
         self.ramp = current.RampCurrent(self.curs, self.times)
 
     def test_init(self):
