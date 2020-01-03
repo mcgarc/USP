@@ -9,12 +9,13 @@ import scipy.integrate as integ
 import numpy as np
 
 
-def fun(t, Q, potential):
+def Q_dot(t, Q, potential):
     """
-    Q = (r, v) is the 6-vector of position in phase space
+    Return the time derivative of Q, the 6-vector position in momentum space,
+    for a particle in given potential at time t. (Hamilton's equations)
     """
-    r = Q[:3].flatten()
-    v = Q[3:].flatten()
+    r = Q[:3]
+    v = Q[3:]
     dvx_dt = -grad(potential, t, r, 'x')
     dvy_dt = -grad(potential, t, r, 'y')
     dvz_dt = -grad(potential, t, r, 'z')
@@ -42,10 +43,11 @@ def main():
             0,
             [0, 0, 0.1]
             )
-    fun2 = lambda t, Q: fun(t, Q, ztrap.potential)
+    # RK45 takes a function with args t and Q, so pass in potential here
+    Q_dot_wpot = lambda t, Q: Q_dot(t, Q, ztrap.potential)
     t_end = 100000
     max_step = t_end/1000
-    ans = integ.RK45(fun2, 0, mol.Q, t_end, vectorized=True, max_step=max_step)
+    ans = integ.RK45(Q_dot_wpot, 0, mol.Q, t_end, max_step=max_step)
     while ans.t < t_end:
         ans.step()
         print(ans.y[:3])
