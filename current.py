@@ -87,3 +87,24 @@ class StepCurrent(AbstractCurrentProfile):
         cond_list += [t >= self.times[-1]]
         cur_list = [0] + self.currents + [0]
         return float(np.piecewise(t, cond_list, cur_list))
+
+class RampCurrent(AbstractCurrentProfile):
+    """
+    Current that ramps through time. Takes a list of currents and a
+    corresponding list of times. At each time, ramp up to the next current and
+    hold at that value until the next time. Ramps are linear.
+
+    For inputs of currents = [1] and times = [0, 1, 2, 3] ramp will look like 
+   1|     _____
+    |    /     \
+    |   /       \
+    |  /         \
+    | /           \
+    |/             \
+   0___________________
+    0    1     2     3
+    """
+
+    def __init__(self, currents, times):
+        if len(times) != 2*len(currents) + 2:
+            raise ValueError('Mismatched current and time lengths')

@@ -67,7 +67,7 @@ class TestRampCurrent(unittest.TestCase):
 
     def test_eq(self):
         self.assertTrue(self.ramp == self.ramp)
-        diff_ramp = current.RampCurrent([7], [10, 11, 12])
+        diff_ramp = current.RampCurrent([7], [10, 11, 12, 13])
         self.assertFalse(self.ramp == diff_ramp)
 
     def test_current_simple(self):
