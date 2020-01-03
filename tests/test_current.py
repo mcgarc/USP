@@ -63,7 +63,7 @@ class TestRampCurrent(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.curs, self.ramp.currents)
         self.assertEqual(self.times, self.ramp.times)
-        self.assertEqual(3, len(self.step))
+        self.assertEqual(1, len(self.ramp))
 
     def test_eq(self):
         self.assertTrue(self.ramp == self.ramp)
