@@ -55,11 +55,10 @@ class StepCurrent(AbstractCurrentProfile):
     """
 
     def __init__(self, currents, times):
-        if len(currents) + 1 != len(times):
-            raise ValueError('Mismatched current and time lengths')
         self._currents = currents
         self._times = sorted(times)
         self._size = len(currents)
+        self._check_times_currents()
 
     def __eq__(self, other):
         instance = isinstance(other, StepCurrent)
@@ -72,6 +71,13 @@ class StepCurrent(AbstractCurrentProfile):
 
     def __len__(self):
         return self._size
+
+    def _check_times_currents(self):
+        """
+        Check the relative length of currents and times
+        """
+        if len(self.currents) + 1 != len(self.times):
+            raise ValueError('Mismatched current and time lengths')
 
     @property
     def times(self):
@@ -88,7 +94,7 @@ class StepCurrent(AbstractCurrentProfile):
         cur_list = [0] + self.currents + [0]
         return float(np.piecewise(t, cond_list, cur_list))
 
-class RampCurrent(AbstractCurrentProfile):
+class RampCurrent(StepCurrent):
     """
     Current that ramps through time. Takes a list of currents and a
     corresponding list of times. At each time, ramp up to the next current and
@@ -101,10 +107,16 @@ class RampCurrent(AbstractCurrentProfile):
     |  /         \
     | /           \
     |/             \
-   0___________________
-    0    1     2     3
+   0------------------
+    0    1    2     3
     """
 
     def __init__(self, currents, times):
-        if len(times) != 2*len(currents) + 2:
+        super().__init__(currents, times)
+
+    def _check_times_currents(self):
+        """
+        Overrides superclass check for relative length of times and currents
+        """
+        if len(self.times) != 2*len(self.currents) + 2:
             raise ValueError('Mismatched current and time lengths')
