@@ -1,4 +1,5 @@
 import warnings
+import numpy as np
 
 
 class AbstractCurrentProfile:
@@ -45,3 +46,44 @@ class ConstantCurrent(AbstractCurrentProfile):
 
     def current(self, t):
         return self._current
+
+class StepCurrent(AbstractCurrentProfile):
+    """
+    Current that steps through time. Takes a list of currents and a
+    corresponding list of times of the same length. Each current element is the
+    current *up to and excluding* the corresponding time element
+    """
+
+    def __init__(self, currents, times):
+        if len(currents) + 1 != len(times):
+            raise ValueError('Mismatched current and time lengths')
+        self._currents = currents
+        self._times = sorted(times)
+        self._size = len(currents)
+
+    def __eq__(self, other):
+        instance = isinstance(other, StepCurrent)
+        size = self._size == len(other)
+        curs = self.currents == other.currents
+        times = self.times == other.times
+        if instance and size and curs and times:
+            return True
+        return False
+
+    def __len__(self):
+        return self._size
+
+    @property
+    def times(self):
+        return self._times
+
+    @property
+    def currents(self):
+        return self._currents
+        
+    def current(self, t):
+        cond_list = [t < self.times[0]]
+        cond_list += [self.times[i] <= t and t < self.times[i+1] for i in range(self._size)] 
+        cond_list += [t >= self.times[-1]]
+        cur_list = [0] + self.currents + [0]
+        return float(np.piecewise(t, cond_list, cur_list))
