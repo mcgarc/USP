@@ -4,7 +4,7 @@ import scipy.constants as spc
 
 import trap
 import wire
-import current
+import parameter
 
 
 class TestTrap(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestTrap(unittest.TestCase):
         Test the static zwire trap generated with position and time. Check that
         the zero is where we expect it to be
         """
-        cur = current.ConstantCurrent(1)
+        cur = parameter.ConstantParameter(1)
         zwire = wire.ZWire(cur, 0.1) 
         zero_pos = [0, 0, 0.1]
         ztrap = trap.ClusterTrapStaticTR(zwire, 0, zero_pos)
@@ -35,4 +35,3 @@ class TestTrap(unittest.TestCase):
                 nonzero_value,
                 np.zeros(3)
                 )
-

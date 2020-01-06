@@ -3,7 +3,7 @@ import numpy as np
 import scipy.constants as spc
 
 import wire
-import current
+import parameter
 
 class TestWireSegmentMethods(unittest.TestCase):
     """
@@ -16,7 +16,7 @@ class TestWireSegmentMethods(unittest.TestCase):
         """
         self.start = [-1, 0, 0]
         self.end = [1, 0, 0]
-        self.current = current.ConstantCurrent(1)
+        self.current = parameter.ConstantParameter(1)
         self.wire = wire.WireSegment(self.current, self.start, self.end)
 
     def test_properties(self):
@@ -32,24 +32,24 @@ class TestWireSegmentMethods(unittest.TestCase):
         same_wire = wire.WireSegment(self.current, self.start, self.end)
         self.assertEqual(self.wire, same_wire)
         # Check with same current
-        same_current = current.ConstantCurrent(self.current.current(0))
+        same_current = parameter.ConstantParameter(self.current.value(0))
         same_wire = wire.WireSegment(same_current, self.start, self.end)
         self.assertEqual(self.wire, same_wire)
         # Check with different current
-        diff_current = current.ConstantCurrent(-2)
+        diff_current = parameter.ConstantParameter(-2)
         different_wire = wire.WireSegment(diff_current, [-5, 0, 0], [0, 0, 3])
         self.assertNotEqual(self.wire, different_wire)
 
     def test_set_current(self):
         """
-        Cannot set int as current (must be of type AbstractCurrentProfile)
+        Cannot set int as current (must be of type AbstractParameterProfile)
         """
         with self.assertRaises(ValueError):
             self.wire.set_current(1)
         cur = 5
-        new_current = current.ConstantCurrent(cur)
+        new_current = parameter.ConstantParameter(cur)
         self.wire.set_current(new_current)
-        self.assertEqual(self.wire.current.current(0), cur)
+        self.assertEqual(self.wire.current.value(0), cur)
 
     def test_field_simple(self):
         """
@@ -69,7 +69,7 @@ class TestWireSegmentMethods(unittest.TestCase):
         """
         Test the field method when the wire current is reversed
         """
-        current_nve = current.ConstantCurrent(-1)
+        current_nve = parameter.ConstantParameter(-1)
         self.wire.set_current(current_nve)
         r = [0, 1, 0]
         magnitude = spc.mu_0 / (2 * np.sqrt(2) * np.pi)
@@ -83,8 +83,8 @@ class TestWireClusterMethods(unittest.TestCase):
 
     def setUp(self):
         # setup parallel wire cluster
-        current_pve = current.ConstantCurrent(1)
-        current_nve = current.ConstantCurrent(-1)
+        current_pve = parameter.ConstantParameter(1)
+        current_nve = parameter.ConstantParameter(-1)
         wire_top = wire.WireSegment(current_pve, [-1, 1, 0], [1, 1, 0])
         wire_bot = wire.WireSegment(current_pve, [-1,-1, 0], [1,-1, 0])
         self.cluster_parallel = wire.WireCluster([wire_top, wire_bot])
@@ -121,7 +121,7 @@ class TestZWireMethods(unittest.TestCase):
 
     def setUp(self):
         self.end_length = 10
-        self.current = current.ConstantCurrent(1)
+        self.current = parameter.ConstantParameter(1)
         self.al = 1.
         self.z_wire = wire.ZWire(self.current,
                                  self.al,
