@@ -120,3 +120,32 @@ class RampCurrent(StepCurrent):
         """
         if len(self.times) != 2*len(self.currents) + 2:
             raise ValueError('Mismatched current and time lengths')
+
+    @staticmethod
+    def current_ramp(c_i, c_f, t_i, t_f, t):
+        """
+        Returns the value of the ramp between c_i and c_f over t_i and t_f at
+        time t
+        """
+        grad = (c_f - c_i) / (t_f - t_i)
+        return grad * (t - t_i) + c_i
+
+    def current(self, t):
+        """
+        """
+        cond_list = [self.times[i] <= t and t <= self.times[i+1] for i in range(len(self._times) - 1)] 
+        cond_list = [t < self.times[0]] + cond_list + [t > self.times[-1]]
+        currents = [0] + self.currents + [0]
+        region_index = cond_list.index(True)
+        if region_index % 2:
+            # Ramping phase
+            return self.current_ramp(
+                    currents[int((region_index - 1)/2)],
+                    currents[int((region_index + 1)/2)],
+                    self.times[region_index - 1],
+                    self.times[region_index],
+                    t
+                    )
+        else:
+            # Constant phase
+            return currents[int(region_index/2)]
