@@ -1,7 +1,7 @@
 import particle
 import trap
 import wire
-import current
+import parameter
 
 from utils import grad
 
@@ -36,12 +36,13 @@ def main():
             [0, 0, 0],
             1E-20,
             )
-    cur = current.ConstantCurrent(1)
+    cur = parameter.ConstantParameter(1)
+    #height = parameter.ConstantParameter(0.1)
+    height = parameter.RampParameter([0.1, 0.2], [-2, -1, 50, 1050, float('inf'), float('inf')])
     zcluster = wire.ZWire(cur, 0.1)
-    ztrap = trap.ClusterTrapStaticTR(
+    ztrap = trap.ClusterTrap(
             zcluster,
-            0,
-            [0, 0, 0.1]
+            height
             )
     # RK45 takes a function with args t and Q, so pass in potential here
     Q_dot_wpot = lambda t, Q: Q_dot(t, Q, ztrap.potential)
@@ -55,4 +56,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
