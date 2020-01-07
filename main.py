@@ -7,8 +7,19 @@ from utils import grad
 
 import scipy.integrate as integ
 import numpy as np
+import pathos.multiprocessing as mp
 
-    
+
+def stepper(mol):
+    """
+    For use with multiprocessing map. Calls step_integ method of the mol
+    argument, so you don't have to
+    """
+    steps = 1000
+    for step in range(steps):
+        mol.step_integ()
+        # Debuging output
+        print(mol.r)
 
 def main():
     """
@@ -42,12 +53,9 @@ def main():
         mol.init_integ(ztrap.potential, t_end, max_step=max_step)
 
     # Stepper
-    for step in range(1000):
-        for mol in mols:
-            mol.step_integ()
-        positions = np.array([ mol.r for mol in mols ])
-        times = [ mol.t for mol in mols ] 
-        print('{}: {}'.format(times, positions.mean(axis=0)))
+    processes = 2
+    with mp.ProcessingPool(processes) as p:
+        p.map(stepper, mols)
 
 
 if __name__ == '__main__':
