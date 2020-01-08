@@ -12,3 +12,7 @@ Written by Cameron McGarry
 2. (Recommended) Create and activate virtual environment
 3. `pip install -r requirements`
 4. Enjoy!
+
+## Test
+
+Run `test.py`, or for coverage use `sh run_coverage.sh`
