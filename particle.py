@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.integrate as integ
 
-from utils import grad
+import utils
 
 
 class Particle:
@@ -47,20 +47,11 @@ class Particle:
         """
         return np.concatenate((self.r, self.v))
 
-    def _clean_vector(self, vector, length=3):
-        """
-        Ensure a vector is of the right length and format before setting it
-        """
-        vector = np.array(vector)
-        if len(vector) != 3:
-            raise ValueError(f'Vector should have length {length}')
-        return vector
-
     def set_r(self, r):
-        self._r = self._clean_vector(r)
+        self._r = utils.clean_vector(r)
 
     def set_v(self, v):
-        self._v = self._clean_vector(v)
+        self._v = utils.clean_vector(v)
 
     def set_m(self, m):
         self._m = m
@@ -100,9 +91,9 @@ class Particle:
         """
         r = Q[:3]
         v = Q[3:]
-        dvx_dt = -grad(potential, t, r, 'x') / self.m
-        dvy_dt = -grad(potential, t, r, 'y') / self.m
-        dvz_dt = -grad(potential, t, r, 'z') / self.m
+        dvx_dt = -utils.grad(potential, t, r, 'x') / self.m
+        dvy_dt = -utils.grad(potential, t, r, 'y') / self.m
+        dvz_dt = -utils.grad(potential, t, r, 'z') / self.m
         dQ_dt = np.array([
                 v[0],
                 v[1],
