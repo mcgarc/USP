@@ -1,4 +1,4 @@
-# Untitled wire simulation project
+# Untitled particle simulation project
 
 A simple Python 3 simulation of particles trapped by current-carrying wires.
 
