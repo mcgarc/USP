@@ -5,12 +5,32 @@ import scipy.constants as spc
 import trap
 import wire
 import parameter
+import field
 
 
 class TestTrap(unittest.TestCase):
     """
-    Test trap
+    Test trap classes.
     """
+
+    def test_abstract(self):
+        """
+        Tests for abstract trap without overrides
+        """
+        abs_trap = trap.AbstractTrap()
+        self.assertRaises(NotImplementedError, abs_trap.field, 0, 0)
+        self.assertRaises(NotImplementedError, abs_trap.potential, 0, 0)
+
+    def test_cluster_static(self):
+        """
+        Test init parameter types for cluster trap sta
+        """
+        cur = parameter.ConstantParameter(1)
+        zwire = wire.ZWire(cur, 0.1) 
+        fld = field.StaticField([0, 0, 0])
+        cluster_trap = trap.ClusterTrapStatic
+        self.assertRaises(ValueError, cluster_trap, 0, fld)
+        self.assertRaises(ValueError, cluster_trap, zwire, 0)
 
     def test_zwire_rt_static(self):
         """
