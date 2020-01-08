@@ -55,3 +55,6 @@ class TestTrap(unittest.TestCase):
                 nonzero_value,
                 np.zeros(3)
                 )
+
+    def test_cluster_trap(self):
+        pass
