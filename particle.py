@@ -47,6 +47,10 @@ class Particle:
         """
         return np.concatenate((self.r, self.v))
 
+    @property
+    def terminated(self):
+        return self._terminated
+
     def set_r(self, r):
         self._r = utils.clean_vector(r)
 
@@ -55,6 +59,9 @@ class Particle:
 
     def set_m(self, m):
         self._m = m
+
+    def terminate(self):
+        self._terminated = True
 
     def init_integ(
             self,
@@ -81,8 +88,8 @@ class Particle:
             Q = self._integ.y
             self.set_r(Q[:3])
             self.set_v(Q[3:])
-        # Check for termination
-        self.check_termination()
+            # Check for termination
+            self.check_termination()
 
     def _dQ_dt(self, t, Q, potential):
         """

@@ -38,7 +38,7 @@ class TestParticle(unittest.TestCase):
 
     def test_integ_properties(self):
         """
-        TODO: Test that once _integ is not None, it's properties can be
+        TODO: Test that once _integ is not None, its properties can be
         reclaimed
         """
         #self.assertIsNotNone(self.particle.t) # Maybe this is 0?
@@ -51,6 +51,21 @@ class TestParticle(unittest.TestCase):
         pass
 
     def test_check_termination(self):
+        """
+        Test that a terminated particle cannot be stepped further
+        """
+        self.assertFalse(self.particle.terminated)
+        self.particle.terminate()
+        self.assertTrue(self.particle.terminated)
+        # If terminated then particle._integ will not be accessed, so there will
+        # not be an error
+        try:
+            self.particle.step_integ()
+        except AttributeError:
+            self.fail('Attempted propagation of terminated particle')
+
+
+    def test_check_termination_conditions(self):
         """
         TODO: Write specification for termination conditions and write tests for
         development
