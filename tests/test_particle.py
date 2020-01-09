@@ -1,6 +1,9 @@
 import unittest
 import numpy as np
 
+import parameter
+import trap
+import wire
 import particle
 
 class TestParticle(unittest.TestCase):
@@ -14,6 +17,31 @@ class TestParticle(unittest.TestCase):
         self.m = 1
         self.particle = particle.Particle(self.r, self.v, self.m)
 
+    def trivial_ztrap(self):
+        """
+        Return a traivial z-trap with zero potential
+        """
+        cur = parameter.ConstantParameter(0)
+        height = parameter.RampParameter([0.1, 0.2], [-2, -1, 50, 1050, float('inf'), float('inf')])
+        zcluster = wire.ZWire(cur, 0.1)
+        ztrap = trap.ClusterTrap(
+                zcluster,
+                height
+                )
+        return ztrap
+
+    def setup_integ_test_trivial(self):
+        """
+        Create a trivial potential from a zwire for use in testing the particle
+        ODE solver
+        """
+        ztrap = self.trivial_ztrap()
+        # Test with a particle that won't be inside the wire
+        self.particle.set_r([0, 0, 0.1]) 
+        # Integrator parameters  and init
+        t_end = 1
+        max_step = t_end/1000
+        self.particle.init_integ(ztrap.potential, t_end, max_step=max_step)
 
     def test_properties(self):
         np.testing.assert_array_equal(self.r, self.particle.r)
@@ -32,17 +60,17 @@ class TestParticle(unittest.TestCase):
 
     def test_init_integ(self):
         """
-        TODO: Test initialisation of the integrator for a simple potential
+        Test initialisation of the integrator for a simple potential
         """
-        pass
+        self.assertIsNone(self.particle._integ)
+        self.setup_integ_test_trivial()
+        self.assertIsNotNone(self.particle._integ)
+        self.assertEqual(0, self.particle.t)
 
-    def test_integ_properties(self):
+    def test_integ_trivial(self):
         """
-        TODO: Test that once _integ is not None, its properties can be
-        reclaimed
         """
-        #self.assertIsNotNone(self.particle.t) # Maybe this is 0?
-        pass
+        self.setup_integ_test_trivial()
 
     def test_step_integ(self):
         """
