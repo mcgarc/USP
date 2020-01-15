@@ -28,4 +28,4 @@ def grad(f, t, r, direction, delta=DX):
     direction[i] = 1
     delta_plus = r + delta * np.array(direction)
     delta_minus = r - delta * np.array(direction)
-    return (f(t, delta_plus) - f(t, delta_minus))/delta
+    return (f(t, delta_plus) - f(t, delta_minus))/(2*delta)
