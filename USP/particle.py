@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.integrate as integ
+from itertools import count
 
 from . import utils
 
@@ -11,6 +12,7 @@ class Particle:
     in time, and the attribute _terminated, which flags if the particle has
     been destroyed or otherwise lost
     """
+    _index_count = count(0)
 
     def __init__(self, r, v, m):
         self.set_r(r)
@@ -20,6 +22,7 @@ class Particle:
         self.set_m(m)
         self._integ = None
         self._terminated = False
+        self._index = next(self._index_count)
 
     @property
     def r(self):
@@ -50,6 +53,10 @@ class Particle:
     @property
     def terminated(self):
         return self._terminated
+
+    @property
+    def index(self):
+        return self._index
 
     def set_r(self, r):
         self._r = utils.clean_vector(r)
