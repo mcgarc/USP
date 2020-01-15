@@ -22,6 +22,15 @@ class AbstractTrap:
         """
         return np.linalg.norm(self.field(r, t))
 
+class FieldTrap(AbstractTrap):
+    """
+    A trap that uses field method defined externally (e.g. can take a
+    QuadrupoleField.field)
+    """
+
+    def __init__(self, field):
+        self.field = field
+
 class ClusterTrapStatic(AbstractTrap):
     """
     Create a trap based on a wire cluster and a static bias field.

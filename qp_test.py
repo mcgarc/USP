@@ -1,0 +1,59 @@
+import particle
+import trap
+import wire
+import parameter
+import field
+
+from utils import grad
+
+import scipy.integrate as integ
+import numpy as np
+import pathos.multiprocessing as mp
+
+
+def stepper(mol):
+    """
+    For use with multiprocessing map. Calls step_integ method of the mol
+    argument, so you don't have to
+    """
+    steps = 1000
+    for step in range(steps):
+        mol.step_integ()
+        # Debuging output
+        print(mol.r)
+
+def main():
+    """
+    Test simulation of a few particles in a rising potential
+    """
+
+    # Initialise particles
+    particle_no = 3
+    mols = []
+    for _ in range(particle_no):
+        mol = particle.Particle(
+                [0, 0, np.random.normal(0,0.01)],
+                [0, 0, 0],
+                1
+                )
+        mols.append(mol)
+
+    # Initialise QP
+    qp = field.QuadrupoleField(10)
+    qp_trap = trap.FieldTrap(qp.field)
+
+    # Initialise integrators
+    t_end = 100000
+    max_step = t_end/1000
+    for mol in mols:
+        mol.init_integ(qp_trap.potential, t_end, max_step=max_step)
+
+    # Stepper
+    processes = 2
+    with mp.ProcessingPool(processes) as p:
+        p.map(stepper, mols)
+
+
+if __name__ == '__main__':
+    main()
+
