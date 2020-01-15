@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.integrate as integ
 
-import utils
+from . import utils
 
 
 class Particle:

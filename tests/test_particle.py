@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 
-import parameter
-import trap
-import wire
-import particle
+from USP import parameter
+from USP import trap
+from USP import wire
+from USP import particle
 
 class TestParticle(unittest.TestCase):
     """

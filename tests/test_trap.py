@@ -2,10 +2,10 @@ import unittest
 import numpy as np
 import scipy.constants as spc
 
-import trap
-import wire
-import parameter
-import field
+from USP import trap
+from USP import wire
+from USP import parameter
+from USP import field
 
 
 class TestTrap(unittest.TestCase):

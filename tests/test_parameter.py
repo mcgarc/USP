@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import scipy.constants as spc
 
-import parameter
+from USP import parameter
 
 
 class TestStepParameter(unittest.TestCase):

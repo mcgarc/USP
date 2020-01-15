@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.constants as spc
 
-from parameter import AbstractParameterProfile
-import utils
+from USP.parameter import AbstractParameterProfile
+from . import utils
 
 class WireSegment:
     """

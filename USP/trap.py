@@ -1,9 +1,9 @@
 import numpy as np
 
-from wire import WireCluster
-from field import StaticField
+from USP.wire import WireCluster
+from USP.field import StaticField
 
-import parameter
+from USP import parameter
 
 class AbstractTrap:
 

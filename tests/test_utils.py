@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import utils
+from USP import utils
 
 class TestUtils(unittest.TestCase):
     """

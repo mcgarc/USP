@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 import scipy.constants as spc
 
-import wire
-import parameter
+from USP import wire
+from USP import parameter
 
 class TestWireSegmentMethods(unittest.TestCase):
     """

@@ -1,9 +1,9 @@
-import particle
-import trap
-import wire
-import parameter
+from USP import particle
+from USP import trap
+from USP import wire
+from USP import parameter
 
-from utils import grad
+from USP.utils import grad
 
 import scipy.integrate as integ
 import numpy as np
