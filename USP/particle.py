@@ -29,13 +29,6 @@ class Particle:
         return self._m
 
     @property
-    def Q(self):
-        """
-        Q is the 6-vector position in phasespace of form Q = (r, v)
-        """
-        return np.concatenate((self.r, self.v))
-
-    @property
     def terminated(self):
         return self._terminated
 
