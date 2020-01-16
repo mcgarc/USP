@@ -25,14 +25,6 @@ class Particle:
         self._index = next(self._index_count)
 
     @property
-    def r(self):
-        return self._r
-
-    @property
-    def v(self):
-        return self._v
-
-    @property
     def m(self):
         return self._m
 
@@ -58,6 +50,21 @@ class Particle:
     def index(self):
         return self._index
 
+    def Q(self, t):
+        if self._integ is None:
+            if t != 0:
+                raise ValueError('No integrator, so cannot provide r(t>0)')
+            else:
+                return np.concatenate((self._r, self._v)) # Q(t=0)
+        else:
+            return self._integ.sol(t)
+
+    def r(self, t):
+        return self.Q(t)[:3]
+
+    def v(self, t):
+        return self.Q(t)[3:]
+
     def set_r(self, r):
         self._r = utils.clean_vector(r)
 
@@ -70,7 +77,7 @@ class Particle:
     def terminate(self):
         self._terminated = True
 
-    def init_integ(
+    def integ(
             self,
             potential,
             t_end,
@@ -78,25 +85,22 @@ class Particle:
             max_step=float('inf')
             ):
         """
-        Initialise the integrator for the particle. Takes the potential (which
-        we expect to be a function of t and r) and a boundary time. Can take the
-        initial time (assumed zero) and a maximum allowed step (assumed inf)
+        Create and solve initial value problem for the particle. Takes the
+        potential (which we expect to be a function of t and r) and a boundary
+        time. Can take the initial time (assumed zero) and a maximum allowed
+        step (assumed inf)
         """
         # Construct dQ_dt, which is to be stepped by the integrator
         dQ_dt = lambda t, Q: self._dQ_dt(t, Q, potential)
-        self._integ = integ.RK45(dQ_dt, t_0, self.Q, t_end, max_step=max_step)
-
-    def step_integ(self):
-        """
-        """
-        if not self._terminated:
-            self._integ.step()
-            # Update particle position and momentum with stepped values
-            Q = self._integ.y
-            self.set_r(Q[:3])
-            self.set_v(Q[3:])
-            # Check for termination
-            self.check_termination()
+        self._integ = integ.solve_ivp(
+                dQ_dt,
+                (t_0, t_end),
+                self.Q(0),
+                method='RK45',
+                max_step=max_step,
+                dense_output=True,
+                vectorized=True
+                )
 
     def _dQ_dt(self, t, Q, potential):
         """

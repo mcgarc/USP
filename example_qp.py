@@ -3,23 +3,24 @@ from USP import trap
 from USP import wire
 from USP import parameter
 from USP import field
-from USP.utils import grad
+from USP import utils
 
 import scipy.integrate as integ
 import numpy as np
-import pathos.multiprocessing as mp
+import multiprocessing as mp
+from itertools import repeat
+import time
 
+np.random.seed(11111)
 
-def stepper(mol):
+def integ(mol, potential, t_end, max_step):
     """
-    For use with multiprocessing map. Calls step_integ method of the mol
-    argument, so you don't have to
+    Call init_integ of a passed mol. For parallelisation
     """
-    steps = 1000
-    for step in range(steps):
-        mol.step_integ()
-        # Debuging output
-        print(mol.r)
+    mol.integ(potential, t_end, max_step=max_step)
+    #print(mol.index) # Useful for debugging
+    # Check conservation of energy
+    #print (np.dot(mol.v(0), mol.v(0)) - np.dot(mol.v(t_end), mol.v(t_end)))
 
 def main():
     """
@@ -27,12 +28,20 @@ def main():
     """
 
     # Initialise particles
-    particle_no = 3
+    particle_no = 10
     mols = []
     for _ in range(particle_no):
         mol = particle.Particle(
-                [0, 0, np.random.normal(0,0.01)],
-                [0, 0, 0],
+                [
+                    np.random.normal(0, 0.01),
+                    np.random.normal(0, 0.01),
+                    np.random.normal(0, 0.01)
+                ],
+                [
+                    np.random.normal(0, 0.01),
+                    np.random.normal(0, 0.01),
+                    np.random.normal(0, 0.01)
+                ],
                 1
                 )
         mols.append(mol)
@@ -41,18 +50,18 @@ def main():
     qp = field.QuadrupoleField(10)
     qp_trap = trap.FieldTrap(qp.field)
 
-    # Initialise integrators
-    t_end = 100000
-    max_step = t_end/1000
-    for mol in mols:
-        mol.init_integ(qp_trap.potential, t_end, max_step=max_step)
-
-    # Stepper
-    processes = 2
-    with mp.ProcessingPool(processes) as p:
-        p.map(stepper, mols)
+    # Perform integration
+    t_end = 1E3
+    max_step = t_end / 100
+    processes = 4
+    args = zip(mols, repeat(qp_trap.potential), repeat(t_end), repeat(max_step))
+    with mp.Pool(processes) as p:
+        p.starmap(integ, args)
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+    end = time.time()
+    print(end - start)
 
