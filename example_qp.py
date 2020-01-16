@@ -30,45 +30,49 @@ def main():
     """
 
     # Initialise particles
-    particle_no = 100
-    mols = []
-    for _ in range(particle_no):
-        mol = particle.Particle(
-                [
-                    np.random.normal(0, 0.21),
-                    np.random.normal(0, 0.21),
-                    np.random.normal(0, 0.21)
-                ],
-                [
-                    np.random.normal(0, 0.21),
-                    np.random.normal(0, 0.21),
-                    np.random.normal(0, 0.21)
-                ],
-                1
-                )
-        mols.append(mol)
+    particle_no = 10
+    mols = [
+        particle.Particle(
+          [
+              np.random.normal(0, 1),
+              np.random.normal(0, 1),
+              np.random.normal(0, 1)
+          ],
+          [
+              np.random.normal(0, 1E-3),
+              np.random.normal(0, 1E-3),
+              np.random.normal(0, 1E-3)
+          ],
+          1
+          )
+        for _ in range(particle_no)
+        ]
 
     # Initialise QP
     qp = field.QuadrupoleField(10)
     qp_trap = trap.FieldTrap(qp.field)
 
     # Output times
-    t_end = 1E2
+    t_end = 1E1
     times = np.linspace(0, t_end, 20)
 
     # Perform integration
     max_step = t_end / 10
     processes = 4
-    args = zip(mols, repeat(qp_trap.potential), repeat(t_end), repeat(max_step), repeat(times))
+    args = zip(
+            mols,
+            repeat(qp_trap.potential),
+            repeat(t_end),
+            repeat(max_step),
+            repeat(times)
+            )
     with mp.Pool(processes) as p:
         mol_Qs = p.starmap(integ, args)
-        for Qs in mol_Qs:
-            for Q in Qs:
-                print(Q)
+
+    utils.create_output_csv(times, mol_Qs)
 
 if __name__ == '__main__':
     start = time.time()
     main()
     end = time.time()
     print(end - start)
-

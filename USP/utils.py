@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 
 DX = 1E-6
 
@@ -29,3 +30,28 @@ def grad(f, t, r, direction, delta=DX):
     delta_plus = r + delta * np.array(direction)
     delta_minus = r - delta * np.array(direction)
     return (f(t, delta_plus) - f(t, delta_minus))/(2*delta)
+
+def create_output_csv(times, mol_Qs):
+    """
+    Procuce a CSV file for each time at which Q(t) was evaluated. Each CSV
+    contains Q(t) for each molecule.
+
+    Args
+    times: list of times at which molecule Q(t) were evaluated
+    mol_Qs: list of Q(t) values for each time and for each molecule
+    """
+    # Transpose to desired format
+    mol_Qs = np.array(mol_Qs)
+    time_Qs = mol_Qs.transpose(1,0,2)
+    # Check times provided match Qs
+    if len(times) != time_Qs.shape[0]:
+        raise ValueError()
+    for t_index in range(len(times)):
+        time = times[t_index]
+        Qs = time_Qs[t_index]
+
+        with open(f'output/{time}.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter = ' ')
+            for Q in Qs:
+                # TODO Index
+                writer.writerow(Q)
