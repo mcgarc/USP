@@ -29,13 +29,6 @@ class Particle:
         return self._m
 
     @property
-    def t(self):
-        if self._integ is None:
-            return None
-        else:
-            return self._integ.t
-
-    @property
     def Q(self):
         """
         Q is the 6-vector position in phasespace of form Q = (r, v)
