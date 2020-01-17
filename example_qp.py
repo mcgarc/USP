@@ -58,8 +58,6 @@ def qp_simulation(
     times = np.linspace(0, t_end, 20)
 
     # Perform integration
-    max_step = t_end/1E4
-    max_step = np.inf
     processes = 4
     args = zip(
             mols,
@@ -77,9 +75,9 @@ def main():
     # Params
     particle_no = 1000
     r_sigma = 1E-1
-    v_sigma = 1E-7
-    mass = 1E-5
-    qp_b1 = 1E-3
+    v_sigma = 1E-4
+    mass = 1E-4
+    qp_b1 = 100
     t_end = 1E2
     max_step = np.inf
 
