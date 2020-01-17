@@ -4,9 +4,15 @@ import numpy as np
 import csv
 
 def get_row_r(row):
-    return [float(x) for x in row[3:]]
+    return [float(x) for x in row[:3]]
 
-def plot_positions(filenames, colours):
+def plot_positions(
+        filenames,
+        colours,
+        x_lim = None,
+        y_lim = None,
+        z_lim = None
+        ):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
@@ -25,6 +31,12 @@ def plot_positions(filenames, colours):
         zs = positions[2,:]
         ax.scatter(xs, ys, zs, colour)
 
+    if x_lim is not None:
+        ax.set_xlim(*x_lim)
+    if y_lim is not None:
+        ax.set_ylim(*y_lim)
+    if z_lim is not None:
+        ax.set_zlim(*z_lim)
     plt.show()
 
     
