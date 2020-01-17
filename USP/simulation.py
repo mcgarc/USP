@@ -18,11 +18,14 @@ def _integ(mol, potential, t_end, max_step, out_times):
     # Output molecule position at specified times
     return [mol.Q(t) for t in out_times]
 
+
 class Simulation:
     """
     """
 
     def __init__(self, process_no, trap, t_end, eval_points, t_0=0, max_step=np.inf):
+        """
+        """
         self._process_no = process_no
         self._trap = trap # TODO check type
         self._t_end = t_end
@@ -41,12 +44,21 @@ class Simulation:
 
     def load_result_from_csv(self, filename):
         """
+        Load CSV files into result
         """
         raise NotImplemented
 
 
     def save_result_to_csv(self, filename):
         """
+        Create a series of CSV files containing Q information for each particle
+        at eval times
+
+        Args:
+        filename: string, files saved at `output/{filename}_{index}.csv
+
+        Output:
+        None, creates CSV files
         """
         for t_index in range(len(self._eval_times)):
             time = times[t_index]
@@ -59,6 +71,10 @@ class Simulation:
 
     def run(self):
         """
+        Run the simulation using multiprocessing.
+
+        Output:
+        None, populsates self._results TODO: with results object!
         """
         args = zip(
                 self._particles,
@@ -71,7 +87,7 @@ class Simulation:
             result = p.starmap(_integ, args)
 
         # result post-processing
-        self._result = np.array(result).transpose(1, 0, 2)
+        self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
 
     def init_particles(
             self,
@@ -80,11 +96,27 @@ class Simulation:
             r_sigma,
             v_sigma,
             r_centre = [0, 0, 0],
-            v_centre = [0, 0, 0]
+            v_centre = [0, 0, 0],
+            seed = None
             ):
         """
-        Create particles for simulation
+        Create particles for simulation.
+
+        Args:
+        particle_no: int
+        mass: float
+        r_sigma: std for particle position distribution
+        v_sigma: std for particle velocity distribution
+        r_centre: where to centre positions (default origin)
+        v_centre: where to centre velocities (default origin)
+        seed: if not None, sets the numpy seed
+
+        Output:
+        None, populates self._particles
         """
+
+        if seed is not None:
+            np.seed(seed)
 
         # Clean sigma input into np arrays of length 3
         if type(r_sigma) in [float, int]:
@@ -98,7 +130,7 @@ class Simulation:
         r_centre = utils.clean_vector(r_centre)
         v_centre = utils.clean_vector(v_centre)
 
-
+        # Generate particles
         self._particles = [
             particle.Particle(
               [
@@ -119,6 +151,8 @@ class Simulation:
     def plot_start_end_positions(self):
         """
         """
+        # TODO This is really bad. Probably need a results class with getter
+        # methods
         start_rs = self._result[0, :, 2:5].transpose()
         end_rs = self._result[-1, :, 2:5].transpose()
         fig = plt.figure()
