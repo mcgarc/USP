@@ -5,3 +5,4 @@ from . import particle
 from . import trap
 from . import utils
 from . import wire
+from . import plot
