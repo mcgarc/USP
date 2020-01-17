@@ -1,9 +1,4 @@
-from USP import particle
-from USP import trap
-from USP import wire
-from USP import parameter
-from USP import field
-from USP import utils
+from USP import *
 
 import scipy.integrate as integ
 import numpy as np
@@ -24,40 +19,47 @@ def integ(mol, potential, t_end, max_step, out_times):
     # Output molecule position at specified times
     return [mol.Q(t) for t in out_times]
 
-def main():
+def qp_simulation(
+        particle_no,
+        r_sigma,
+        v_sigma,
+        mass,
+        qp_b1,
+        t_end,
+        max_step,
+        ):
     """
     Test simulation of a few particles in a rising potential
     """
 
     # Initialise particles
-    particle_no = 10
     mols = [
         particle.Particle(
           [
-              np.random.normal(0, 1),
-              np.random.normal(0, 1),
-              np.random.normal(0, 1)
+              np.random.normal(0, r_sigma),
+              np.random.normal(0, r_sigma),
+              np.random.normal(0, r_sigma)
           ],
           [
-              np.random.normal(0, 1E-3),
-              np.random.normal(0, 1E-3),
-              np.random.normal(0, 1E-3)
+              np.random.normal(0, v_sigma),
+              np.random.normal(0, v_sigma),
+              np.random.normal(0, v_sigma)
           ],
-          1
+          mass
           )
         for _ in range(particle_no)
         ]
 
     # Initialise QP
-    qp = field.QuadrupoleField(10)
+    qp = field.QuadrupoleField(qp_b1)
     qp_trap = trap.FieldTrap(qp.field)
 
     # Output times
-    t_end = 1E1
     times = np.linspace(0, t_end, 20)
 
     # Perform integration
-    max_step = t_end / 10
+    max_step = t_end/1E4
+    max_step = np.inf
     processes = 4
     args = zip(
             mols,
@@ -71,8 +73,41 @@ def main():
 
     utils.create_output_csv(times, mol_Qs)
 
-if __name__ == '__main__':
+def main():
+    # Params
+    particle_no = 1000
+    r_sigma = 1E-1
+    v_sigma = 1E-7
+    mass = 1E-5
+    qp_b1 = 1E-3
+    t_end = 1E2
+    max_step = np.inf
+
+    # Time and run simulation
     start = time.time()
+    qp_simulation(
+        particle_no,
+        r_sigma,
+        v_sigma,
+        mass,
+        qp_b1,
+        t_end,
+        max_step,
+        )
+    run_time = time.time() - start
+    print(f'Simulation runtime: {run_time:.2f}s')
+
+    # Graphical output
+    lims = (-3E-1, 3E-1)
+    lims = None
+    plot.plot_positions(
+            ['output/0.0.csv', f'output/{t_end}.csv'],
+            ['b', 'r'],
+            x_lim=lims,
+            y_lim=lims,
+            z_lim=lims
+            )
+
+
+if __name__ == '__main__':
     main()
-    end = time.time()
-    print(end - start)
