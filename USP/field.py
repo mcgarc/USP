@@ -28,4 +28,4 @@ class QuadrupoleField:
     def field(self, t, r):
         r = np.array(r) - self.r_0
         scale = np.array([-0.5, -0.5, 1])
-        return self.b_1 * scale * r
+        return self.b_1 * np.dot(scale, r)
