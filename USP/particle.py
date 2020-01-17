@@ -68,7 +68,7 @@ class Particle:
             potential,
             t_end,
             t_0=0,
-            max_step=float('inf')
+            max_step=np.inf # This is the regular default value
             ):
         """
         Create and solve initial value problem for the particle. Takes the
