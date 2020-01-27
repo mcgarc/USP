@@ -3,6 +3,7 @@ from USP import particle
 import numpy as np
 from itertools import repeat
 import multiprocessing as mp
+import pickle
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -40,14 +41,42 @@ class Simulation:
 
     @property
     def result(self):
-        return self._result
+        if self._result is None:
+            raise RuntimeError('Simulation has no results.')
+        else:
+            return self._result
+
+    def get_rs(self, time_index):
+        """
+        Return a list of all particles positions at the given time index
+        """
+        return self.result[time_index, :, :3].transpose()
+
+    def get_vs(self, time_index):
+        """
+        Return a list of all particles velocities at the given time index
+        """
+        return self.result[time_index, :, 3:].transpose()
+
+    def save_result_to_pickle(self, filename):
+        """
+        Save _result as a pickle
+        """
+        with open(filename, 'wb') as f:
+            pickle.dump(self.result, f)
+
+    def load_result_from_picle(self, filename):
+        """
+        Load _result as a picle
+        """
+        with open(filename, 'rb') as f:
+            self._result = pickle.load(f)
 
     def load_result_from_csv(self, filename):
         """
         Load CSV files into result
         """
         raise NotImplemented
-
 
     def save_result_to_csv(self, filename):
         """
@@ -151,10 +180,8 @@ class Simulation:
     def plot_start_end_positions(self):
         """
         """
-        # TODO This is really bad. Probably need a results class with getter
-        # methods
-        start_rs = self._result[0, :, 2:5].transpose()
-        end_rs = self._result[-1, :, 2:5].transpose()
+        start_rs = self.get_rs(0)
+        end_rs = self.get_rs(-1)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
