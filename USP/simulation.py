@@ -1,4 +1,6 @@
-import USP
+from USP import trap as USP_trap
+from USP import particle
+from USP import utils
 import numpy as np
 from itertools import repeat
 import multiprocessing as mp
@@ -56,13 +58,14 @@ class Simulation:
         """
         Set trap, checking type in the process. Can also set trap to None.
         """
-        if new_trap is None:
+        if trap is None:
             self._trap = None
-        elif isinstance(trap, USP.trap.AbstractTrap):
+        elif isinstance(trap, USP_trap.AbstractTrap):
             self._trap = trap
         else:
-            raise ValueError('trap is not of valid type, expected None or
-            AbstractTrap')
+            raise ValueError(
+            'trap is not of valid type, expected None or AbstractTrap'
+            )
 
     def get_rs(self, time_index):
         """
@@ -177,16 +180,16 @@ class Simulation:
             r_sigma = [r_sigma, r_sigma, r_sigma]
         if type(v_sigma) in [float, int]:
             v_sigma = [v_sigma, v_sigma, v_sigma]
-        r_sigma = USP.utils.clean_vector(r_sigma)
-        v_sigma = USP.utils.clean_vector(v_sigma)
+        r_sigma = utils.clean_vector(r_sigma)
+        v_sigma = utils.clean_vector(v_sigma)
 
         # Clean centre inputs into np arrays of length 3
-        r_centre = USP.utils.clean_vector(r_centre)
-        v_centre = USP.utils.clean_vector(v_centre)
+        r_centre = utils.clean_vector(r_centre)
+        v_centre = utils.clean_vector(v_centre)
 
         # Generate particles
         self._particles = [
-            USP.particle.Particle(
+            particle.Particle(
               [
                   np.random.normal(r_centre[0], r_sigma[0]),
                   np.random.normal(r_centre[1], r_sigma[1]),
