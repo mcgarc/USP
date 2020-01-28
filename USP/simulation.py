@@ -215,3 +215,14 @@ class Simulation:
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
+
+    def get_KE(self, time_index):
+        """
+        Get kinetic energy at specified time index
+
+        TODO: Support mass of particles (assumes m=1)
+        """
+        vs = self.get_vs(time_index).transpose()
+        vs_sq = [ np.dot(np.array(v), np.array(v)) for v in vs ]
+        KEs = 0.5 * np.array(vs_sq)
+        return np.sum(KEs)
