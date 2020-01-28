@@ -1,5 +1,4 @@
-from USP import utils
-from USP import particle
+import USP
 import numpy as np
 from itertools import repeat
 import multiprocessing as mp
@@ -24,11 +23,18 @@ class Simulation:
     """
     """
 
-    def __init__(self, process_no, trap, t_end, eval_points, t_0=0, max_step=np.inf):
+    def __init__(self,
+            process_no = 1,
+            trap = None,
+            t_end = 1,
+            eval_points = 2,
+            t_0=0,
+            max_step=np.inf
+            ):
         """
         """
         self._process_no = process_no
-        self._trap = trap # TODO check type
+        self.set_trap(trap)
         self._t_end = t_end
         self._eval_times = np.arange(t_0, t_end, eval_points)
         self._max_step = max_step
@@ -45,6 +51,18 @@ class Simulation:
             raise RuntimeError('Simulation has no results.')
         else:
             return self._result
+
+    def set_trap(self, trap):
+        """
+        Set trap, checking type in the process. Can also set trap to None.
+        """
+        if new_trap is None:
+            self._trap = None
+        elif isinstance(trap, USP.trap.AbstractTrap):
+            self._trap = trap
+        else:
+            raise ValueError('trap is not of valid type, expected None or
+            AbstractTrap')
 
     def get_rs(self, time_index):
         """
@@ -65,7 +83,7 @@ class Simulation:
         with open(filename, 'wb') as f:
             pickle.dump(self.result, f)
 
-    def load_result_from_picle(self, filename):
+    def load_result_from_pickle(self, filename):
         """
         Load _result as a picle
         """
@@ -105,6 +123,11 @@ class Simulation:
         Output:
         None, populsates self._results TODO: with results object!
         """
+        # Check that a trap has been specified
+        if self._trap is None:
+            raise RuntimeError('No trap has been specified for this simulation')
+
+        # Create args for _integ running in parallel
         args = zip(
                 self._particles,
                 repeat(self._trap.potential),
@@ -112,6 +135,8 @@ class Simulation:
                 repeat(self._max_step),
                 repeat(self._eval_times)
                 )
+
+        # Multiprocessing
         with mp.Pool(self._process_no) as p:
             result = p.starmap(_integ, args)
 
@@ -152,16 +177,16 @@ class Simulation:
             r_sigma = [r_sigma, r_sigma, r_sigma]
         if type(v_sigma) in [float, int]:
             v_sigma = [v_sigma, v_sigma, v_sigma]
-        r_sigma = utils.clean_vector(r_sigma)
-        v_sigma = utils.clean_vector(v_sigma)
+        r_sigma = USP.utils.clean_vector(r_sigma)
+        v_sigma = USP.utils.clean_vector(v_sigma)
 
         # Clean centre inputs into np arrays of length 3
-        r_centre = utils.clean_vector(r_centre)
-        v_centre = utils.clean_vector(v_centre)
+        r_centre = USP.utils.clean_vector(r_centre)
+        v_centre = USP.utils.clean_vector(v_centre)
 
         # Generate particles
         self._particles = [
-            particle.Particle(
+            USP.particle.Particle(
               [
                   np.random.normal(r_centre[0], r_sigma[0]),
                   np.random.normal(r_centre[1], r_sigma[1]),
