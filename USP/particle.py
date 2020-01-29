@@ -1,6 +1,19 @@
 import numpy as np
-import scipy.integrate as integ
 from itertools import count
+import desolver as de
+import desolver.backend as D
+
+### FIXME This is only the second hackiest bit of code I have ever written...
+def float_conv(x):
+    if type(x) is list:
+        x = np.array(x)
+    if type(x) in [D.array, np.ndarray]:
+        return x.astype(float)
+    else:
+        return float(x)
+
+D.to_float = float_conv
+###
 
 from . import utils
 
@@ -43,7 +56,7 @@ class Particle:
             else:
                 return np.concatenate((self._r, self._v)) # Q(t=0)
         else:
-            return self._integ.sol(t)
+            return self._integ[t]
 
     def r(self, t):
         return self.Q(t)[:3]
@@ -63,13 +76,7 @@ class Particle:
     def terminate(self):
         self._terminated = True
 
-    def integ(
-            self,
-            potential,
-            t_end,
-            t_0=0,
-            max_step=np.inf # This is the regular default value
-            ):
+    def integ(self, potential, t_0, t_end, dt):
         """
         Create and solve initial value problem for the particle. Takes the
         potential (which we expect to be a function of t and r) and a boundary
@@ -78,15 +85,17 @@ class Particle:
         """
         # Construct dQ_dt, which is to be stepped by the integrator
         dQ_dt = lambda t, Q: self._dQ_dt(t, Q, potential)
-        self._integ = integ.solve_ivp(
+        integ = de.OdeSystem(
                 dQ_dt,
-                (t_0, t_end),
-                self.Q(0),
-                method='RK45',
-                max_step=max_step,
-                dense_output=True,
-                vectorized=True
+                y0 = D.array(self.Q(0)),
+                dense_output = False,
+                t = (t_0, t_end),
+                dt = dt
                 )
+        integ.set_method('SymplecticEulerSolver')
+        integ.integrate()
+        self._integ = integ
+        print(integ)
 
     def _dQ_dt(self, t, Q, potential):
         """

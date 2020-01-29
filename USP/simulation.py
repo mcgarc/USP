@@ -9,15 +9,17 @@ import pickle
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def _integ(mol, potential, t_end, max_step, out_times):
+
+def _integ(mol, potential, t_0, t_end, dt, out_times):
     """
     Call init_integ of a passed mol. For parallelisation
     """
-    mol.integ(potential, t_end, max_step=max_step)
+    mol.integ(potential, t_0, t_end, dt)
     #print(mol.index) # Useful for debugging
     # Check conservation of energy
     #print (np.dot(mol.v(0), mol.v(0)) - np.dot(mol.v(t_end), mol.v(t_end)))
     # Output molecule position at specified times
+    return None
     return [mol.Q(t) for t in out_times]
 
 
@@ -26,20 +28,20 @@ class Simulation:
     """
 
     def __init__(self,
-            process_no = 1,
-            trap = None,
-            t_end = 1,
-            eval_points = 2,
-            t_0=0,
-            max_step=np.inf
+            process_no,
+            trap,
+            t_0,
+            t_end,
+            dt,
             ):
         """
         """
         self._process_no = process_no
         self.set_trap(trap)
+        self._t_0 = t_0
         self._t_end = t_end
-        self._eval_times = np.arange(t_0, t_end, eval_points)
-        self._max_step = max_step
+        self._dt = dt
+        self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
         self._result = None
 
@@ -134,17 +136,20 @@ class Simulation:
         args = zip(
                 self._particles,
                 repeat(self._trap.potential),
+                repeat(self._t_0),
                 repeat(self._t_end),
-                repeat(self._max_step),
-                repeat(self._eval_times)
+                repeat(self._dt),
+                [0, self._t_end]#repeat(self._eval_times)
                 )
 
         # Multiprocessing
         with mp.Pool(self._process_no) as p:
-            result = p.starmap(_integ, args)
+            #result = p.starmap(_integ, args)
+            p.starmap(_integ, args)
+            
 
         # result post-processing
-        self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
+        #self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
 
     def init_particles(
             self,
