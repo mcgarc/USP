@@ -53,7 +53,7 @@ class Particle:
     def Q(self, t):
         if self._integ is None:
             if t != 0:
-                raise ValueError('No integrator, so cannot provide r(t>0)')
+                raise ValueError('No integrator, so cannot provide Q(t>0)')
             else:
                 return np.concatenate((self._r, self._v)) # Q(t=0)
         else:
@@ -77,6 +77,33 @@ class Particle:
     def terminate(self):
         self._terminated = True
 
+    def kinetic_energy(self, t):
+        return 0.5 * self.m * np.dot(self.v(t), self.v(t))
+
+    def potential_energy(self, t, potential):
+        """
+        Return the potential energy of the particle at time t
+
+        Args:
+        t: float, the time at which the potential should be evaluated
+        potential: of form `USP.trap.potential`
+        """
+        return potential(t, self.r(t))
+
+    def energy(self, t, potential=None):
+        """
+        Return the total energy of the particle. If no potential is provided
+        then just take the KE
+
+        Args:
+        t: float, the time at which the energy should be evaluated
+        potential: of form `USP.trap.potential` or None
+        """
+        energy = self.kinetic_energy(t)
+        if potential is not None:
+            energy += self.potential_energy(t, potential)
+        return energy
+
     def integ(self, potential, t_0, t_end, dt):
         """
         Create and solve initial value problem for the particle. Takes the
@@ -85,13 +112,13 @@ class Particle:
         step (assumed inf)
         """
         # Construct dQ_dt, which is to be stepped by the integrator
-        dQ_dt = lambda t, Q: self._dQ_dt(t, Q, potential)
         integ = de.OdeSystem(
-                dQ_dt,
+                self._dQ_dt,
                 y0 = D.array(self.Q(0)),
                 dense_output = False,
                 t = (t_0, t_end),
-                dt = dt
+                dt = dt,
+                constants = {'potential': potential}
                 )
         integ.set_method('SymplecticEulerSolver')
         integ.integrate()

@@ -7,15 +7,17 @@ def main():
     """
 
     # Initialise QP
-    qp = field.QuadrupoleField(100)
+    qp = field.QuadrupoleField(1)
     qp_trap = trap.FieldTrap(qp.field)
 
     # Simulation
-    sim = simulation.Simulation(4, qp_trap, 0, 10, 1E-2)
-    sim.init_particles(2, 1, 1, 1)
+    t_end = 100
+    sim = simulation.Simulation(4, qp_trap, 0, t_end, 1E-2)
+    sim.init_particles(100, 1, 1E-1, 1E-3)
     sim.run()
 
-    quit()
+    print(sim.get_total_energy(0))
+    print(sim.get_total_energy(t_end))
 
     # Visualisation
     sim.plot_start_end_positions()

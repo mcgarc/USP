@@ -10,16 +10,12 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def _integ(mol, potential, t_0, t_end, dt, out_times):
+def _integ(particle, potential, t_0, t_end, dt, out_times):
     """
     Call init_integ of a passed mol. For parallelisation
     """
-    mol.integ(potential, t_0, t_end, dt)
-    #print(mol.index) # Useful for debugging
-    # Check conservation of energy
-    #print (np.dot(mol.v(0), mol.v(0)) - np.dot(mol.v(t_end), mol.v(t_end)))
-    # Output molecule position at specified times
-    return [mol.Q(t) for t in out_times]
+    particle.integ(potential, t_0, t_end, dt)
+    return particle
 
 
 class Simulation:
@@ -42,7 +38,6 @@ class Simulation:
         self._dt = dt
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
-        self._result = None
 
     @property
     def particles(self):
@@ -50,10 +45,11 @@ class Simulation:
 
     @property
     def result(self):
-        if self._result is None:
-            raise RuntimeError('Simulation has no results.')
-        else:
-            return self._result
+        """
+        TODO: May be helpful to provide some sort of reduced form of output for
+        exporting
+        """
+        raise NotImplemented
 
     def set_trap(self, trap):
         """
@@ -68,64 +64,38 @@ class Simulation:
             'trap is not of valid type, expected None or AbstractTrap'
             )
 
-    def get_rs(self, time_index):
+    def get_rs(self, t):
         """
-        Return a list of all particles positions at the given time index
+        Return a list of all particles positions at the given time
         """
-        return self.result[time_index, :, :3].transpose()
+        rs = [ p.r(t) for p in self._particles ]
+        return rs
 
-    def get_vs(self, time_index):
+    def get_vs(self, t):
         """
-        Return a list of all particles velocities at the given time index
+        Return a list of all particles velocities at the given time
         """
-        return self.result[time_index, :, 3:].transpose()
+        vs = [ p.v(t) for p in self._particles ]
+        return vs
 
-    def save_result_to_pickle(self, filename):
+    def save_to_pickle(self, filename):
         """
-        Save _result as a pickle
+        Save particles as a pickle
         """
         with open(filename, 'wb') as f:
-            pickle.dump(self.result, f)
+            pickle.dump(self._particles, f)
 
-    def load_result_from_pickle(self, filename):
+    def load_from_pickle(self, filename):
         """
-        Load _result as a picle
+        Load particles from pickle
         """
         with open(filename, 'rb') as f:
-            self._result = pickle.load(f)
+            self._particles = pickle.load(f)
 
-    def load_result_from_csv(self, filename):
-        """
-        Load CSV files into result
-        """
-        raise NotImplemented
-
-    def save_result_to_csv(self, filename):
-        """
-        Create a series of CSV files containing Q information for each particle
-        at eval times
-
-        Args:
-        filename: string, files saved at `output/{filename}_{index}.csv
-
-        Output:
-        None, creates CSV files
-        """
-        for t_index in range(len(self._eval_times)):
-            time = times[t_index]
-            Qs = self._result[t_index]
-            with open(f'output/{filename}_{t_index:03}.csv', 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter = ' ')
-                for Q_index in range(len(Qs)):
-                    row = [time, Q_index] + Qs[Q_index]
-                    writer.writerow(row)
 
     def run(self):
         """
-        Run the simulation using multiprocessing.
-
-        Output:
-        None, populsates self._results TODO: with results object!
+        Run the simulation using multiprocessing. Creates particles
         """
         # Check that a trap has been specified
         if self._trap is None:
@@ -143,11 +113,7 @@ class Simulation:
 
         # Multiprocessing
         with mp.Pool(self._process_no) as p:
-            result = p.starmap(_integ, args)
-            
-
-        # result post-processing
-        self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
+            self._particles = p.starmap(_integ, args)
 
     def init_particles(
             self,
@@ -211,45 +177,17 @@ class Simulation:
     def plot_start_end_positions(self):
         """
         """
-        start_rs = self.get_rs(0)
-        end_rs = self.get_rs(-1)
+        start_rs = np.array(self.get_rs(self._t_0)).transpose()
+        end_rs = np.array(self.get_rs(self._t_end)).transpose()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
-    def get_KE(self, time_index):
+    def get_total_energy(self, t):
         """
-        Get kinetic energy at specified time index
-
-        TODO: Support mass of particles (assumes m=1)
+        Get the total energy (KE + potential) at a specified time 
         """
-        vs = self.get_vs(time_index).transpose()
-        vs_sq = [ np.dot(np.array(v), np.array(v)) for v in vs ]
-        KEs = 0.5 * np.array(vs_sq)
-        return np.sum(KEs)
-
-    # FIXME Stop using time_index and just use time
-    
-
-    # TODO Move energy functions into particle??
-    def get_potential_E(self, time_index):
-        """
-        Get the potential energy at specified time index
-
-        TODO: Time index currently ignored. Need to fix to work with
-        time-dependent potential
-        """
-        rs = self.get_rs(time_index).transpose()
-        # TODO Fix to work at arbitrary time
-        pots = [ self._trap.potential(0, r) for r in rs ]
-        return np.sum(np.array(pots))
-
-    def get_total_E(self, time_index):
-        """
-        Get the total energy (KE + potential) at a specified time index
-        """
-        KE = self.get_KE(time_index)
-        pot = self.get_potential_E(time_index)
-        return KE + pot
+        energies = [p.energy(t, self._trap.potential) for p in self._particles]
+        return np.sum(np.array(energies))
