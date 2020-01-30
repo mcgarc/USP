@@ -4,6 +4,7 @@ import desolver as de
 import desolver.backend as D
 
 ### FIXME This is only the second hackiest bit of code I have ever written...
+# Fixes bug with desolver trying to cast lists/ arrays/ ndarrays as floats
 def float_conv(x):
     if type(x) is list:
         x = np.array(x)
@@ -56,7 +57,7 @@ class Particle:
             else:
                 return np.concatenate((self._r, self._v)) # Q(t=0)
         else:
-            return self._integ[t]
+            return self._integ[t][1] # 1 gets y part
 
     def r(self, t):
         return self.Q(t)[:3]
@@ -95,7 +96,6 @@ class Particle:
         integ.set_method('SymplecticEulerSolver')
         integ.integrate()
         self._integ = integ
-        print(integ)
 
     def _dQ_dt(self, t, Q, potential):
         """

@@ -19,7 +19,6 @@ def _integ(mol, potential, t_0, t_end, dt, out_times):
     # Check conservation of energy
     #print (np.dot(mol.v(0), mol.v(0)) - np.dot(mol.v(t_end), mol.v(t_end)))
     # Output molecule position at specified times
-    return None
     return [mol.Q(t) for t in out_times]
 
 
@@ -139,17 +138,16 @@ class Simulation:
                 repeat(self._t_0),
                 repeat(self._t_end),
                 repeat(self._dt),
-                [0, self._t_end]#repeat(self._eval_times)
+                repeat([0, self._t_end]) # FIXME Should be arbitrary
                 )
 
         # Multiprocessing
         with mp.Pool(self._process_no) as p:
-            #result = p.starmap(_integ, args)
-            p.starmap(_integ, args)
+            result = p.starmap(_integ, args)
             
 
         # result post-processing
-        #self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
+        self._result = np.array(result).transpose(1, 0, 2) # TODO Results object
 
     def init_particles(
             self,
@@ -231,3 +229,27 @@ class Simulation:
         vs_sq = [ np.dot(np.array(v), np.array(v)) for v in vs ]
         KEs = 0.5 * np.array(vs_sq)
         return np.sum(KEs)
+
+    # FIXME Stop using time_index and just use time
+    
+
+    # TODO Move energy functions into particle??
+    def get_potential_E(self, time_index):
+        """
+        Get the potential energy at specified time index
+
+        TODO: Time index currently ignored. Need to fix to work with
+        time-dependent potential
+        """
+        rs = self.get_rs(time_index).transpose()
+        # TODO Fix to work at arbitrary time
+        pots = [ self._trap.potential(0, r) for r in rs ]
+        return np.sum(np.array(pots))
+
+    def get_total_E(self, time_index):
+        """
+        Get the total energy (KE + potential) at a specified time index
+        """
+        KE = self.get_KE(time_index)
+        pot = self.get_potential_E(time_index)
+        return KE + pot
