@@ -185,6 +185,24 @@ class Simulation:
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
+    def plot_phase_diagram(self, particle_index, dir_index,  N_points):
+        """
+        Plot the phase space diagram of a particle in the trap over time.
+
+        TODO: Indicate time with colour (?)
+
+        Args:
+        particle_index: int, the paticle whose PSD is to be shown
+        dire_index: int, corresponds to the x, y or z direction
+        N_points: int, no. of points to plot
+        """
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        particle = self._particles[particle_index]
+        Q_projections = [particle.Q_projection(t, 0) for t in times]
+        Q_projections = np.array(Q_projections).transpose()
+        plt.scatter(Q_projections[0], Q_projections[1])
+        plt.show()
+
     def get_total_energy(self, t):
         """
         Get the total energy (KE + potential) at a specified time 

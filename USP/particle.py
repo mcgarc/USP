@@ -65,6 +65,19 @@ class Particle:
     def v(self, t):
         return self.Q(t)[3:]
 
+    def Q_projection(self, t, dir_index):
+        """
+        Return  the vector [r_i, v_i] at time t
+
+        Arg:
+        t: float, time
+        dir_index: int, 0, 1, 2 corresponds to x, y and z respectvely
+        """
+        i = int(dir_index)
+        if i not in [0, 1, 2]:
+            raise ValueError('Direction index unrecognised (must be 0, 1 or 2)')
+        return np.array([self.r(t)[i], self.v(t)[i]])
+
     def set_r(self, r):
         self._r = utils.clean_vector(r)
 
