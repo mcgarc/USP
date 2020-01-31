@@ -206,7 +206,15 @@ class Simulation:
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
-    def plot_phase_diagram(self, particle_index, dir_index,  N_points):
+    def plot_phase_diagram(
+            self,
+            particle_index,
+            dir_index,
+            N_points,
+            time_gradient=False,
+            colorbar=False,
+            **plot_kwargs
+            ):
         """
         Plot the phase space diagram of a particle in the trap over time.
 
@@ -216,12 +224,32 @@ class Simulation:
         particle_index: int, the paticle whose PSD is to be shown
         dire_index: int, corresponds to the x, y or z direction
         N_points: int, no. of points to plot
+        time_gradient: bool, if true then shade the points for time
+        colorbar: bool, if time_gradient is true then colorbar will create a
+            colour legend for the times
+        plot_kwargs: kwargs to be passed to the scatter plot fn
         """
+        # Get coordinates
         times = np.linspace(self._t_0, self._t_end, N_points)
         particle = self._particles[particle_index]
         Q_projections = [particle.Q_projection(t, 0) for t in times]
         Q_projections = np.array(Q_projections).transpose()
-        plt.scatter(Q_projections[0], Q_projections[1])
+        # Setup time gradient if required
+        if time_gradient:
+            plot_kwargs['c'] = times
+            plt.winter()
+        # Create plot
+        plt.scatter(Q_projections[0], Q_projections[1], **plot_kwargs)
+        # Colorbar
+        if time_gradient and colorbar:
+            plt.colorbar().ax.tick_params(labelsize=14)
+        # Label axes
+        dir_label = {0:'x', 1:'y', 2:'z'}[dir_index]
+        plt.title(f'Phase space projection in {dir_label} direction', fontsize=24)
+        plt.xlabel(f'{dir_label}', fontsize=20)
+        plt.ylabel(f'v_{dir_label}', fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.show()
 
     def get_total_energy(self, t):
