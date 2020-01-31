@@ -1,3 +1,16 @@
+"""
+This file is part of Untitled Simulation Project
+
+You can redistribute or modify it under the terms of the GNU General Public
+License, either version 3 of the license or any later version.
+
+Author: Cameron McGarry, 2020
+
+Classes:
+
+Particle: Holds information on a particle and its integrator
+"""
+
 import numpy as np
 from itertools import count
 import desolver as de
@@ -29,6 +42,14 @@ class Particle:
     _index_count = count(0)
 
     def __init__(self, r, v, m):
+        """
+        Initialise a particle with starting position, velocity and mass
+
+        Args:
+        r: list-like, initial position
+        v: list-like, initial velocity
+        m: float, mass
+        """
         self.set_r(r)
         self._r_0 = self.r
         self.set_v(v)
@@ -51,6 +72,12 @@ class Particle:
         return self._index
 
     def Q(self, t):
+        """
+        Return Q = [r, v] at time t
+
+        Args:
+        t: float, time
+        """
         if self._integ is None:
             if t != 0:
                 raise ValueError('No integrator, so cannot provide Q(t>0)')
@@ -123,6 +150,11 @@ class Particle:
         potential (which we expect to be a function of t and r) and a boundary
         time. Can take the initial time (assumed zero) and a maximum allowed
         step (assumed inf)
+
+        Args:
+        t0: float, starting time
+        t_end: float, end time
+        dt: float, step
         """
         # Construct dQ_dt, which is to be stepped by the integrator
         integ = de.OdeSystem(
@@ -141,6 +173,11 @@ class Particle:
         """
         Return the time derivative of Q, the 6-vector position in momentum space,
         for a particle in given potential at time t. (Hamilton's equations)
+
+        Args:
+        t: float, time of evaluation
+        Q: list-like: numerical evaluation of Q=[r,v] at time t
+        potential: method, a method `trap.potential` which takes arguments t, r
         """
         r = Q[:3]
         v = Q[3:]
