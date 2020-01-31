@@ -1,3 +1,19 @@
+"""
+This file is part of Untitled Simulation Project
+
+You can redistribute or modify it under the terms of the GNU General Public
+License, either version 3 of the license or any later version.
+
+Author: Cameron McGarry, 2020
+
+Classes:
+
+AbstractParameterProfile
+ConstantParameter
+StepParameter
+RampParameter
+"""
+
 import warnings
 import numpy as np
 

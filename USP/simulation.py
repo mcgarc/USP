@@ -1,3 +1,20 @@
+"""
+This file is part of Untitled Simulation Project
+
+You can redistribute or modify it under the terms of the GNU General Public
+License, either version 3 of the license or any later version.
+
+Author: Cameron McGarry, 2020
+
+Classes:
+
+Simulation: Holds information for a simulation and allows multiprocessing
+evaluation of particle integrators
+
+Functions:
+_integ: Used to call integration method of a particle in multiprocessing
+"""
+
 from USP import trap as USP_trap
 from USP import particle
 from USP import utils

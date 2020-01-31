@@ -1,4 +1,12 @@
-# Physical constants
+"""
+This file is part of Untitled Simulation Project
+
+You can redistribute or modify it under the terms of the GNU General Public
+License, either version 3 of the license or any later version.
+
+
+This file provides useful physical constants
+"""
 
 # Mass of CaF molecule (kg)
 m_CaF = 9.7907E-26

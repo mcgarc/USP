@@ -1,3 +1,17 @@
+"""
+This file is part of Untitled Simulation Project
+
+You can redistribute or modify it under the terms of the GNU General Public
+License, either version 3 of the license or any later version.
+
+Author: Cameron McGarry, 2020
+
+Classes:
+
+StaticField: Provides field method for an arbitrary constant field
+QuadrupoleField: Provides field method for a quadrupolar field
+"""
+
 import numpy as np
 
 from . import utils
@@ -8,6 +22,12 @@ class StaticField:
     """
 
     def __init__(self, field_array):
+        """
+        Constructor for StaticField
+
+        Args:
+        field_array: list-like, the components of the static field in x, y and z
+        """
         self.field_array = np.array(field_array)
 
     def field(self, t, r):
@@ -20,7 +40,11 @@ class QuadrupoleField:
 
     def __init__(self, b_1, r_0=[0,0,0]):
         """
-        Take the field gradient b_1 as an argument. Optional trap centre arg r_0
+        Constructor for QuadrupoleField
+
+        Args:
+        b_1: float, field gradient
+        r_0: list-like, zero position (optional, default [0,0,0])
         """
         self.b_1 = b_1
         self.r_0 = utils.clean_vector(r_0)
