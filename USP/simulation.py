@@ -22,6 +22,7 @@ import numpy as np
 from itertools import repeat
 import multiprocessing as mp
 import pickle
+import time
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -55,6 +56,7 @@ class Simulation:
         self._dt = dt
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
+        self.run_time = None
 
     @property
     def particles(self):
@@ -129,8 +131,10 @@ class Simulation:
                 )
 
         # Multiprocessing
+        start_time = time.time()
         with mp.Pool(self._process_no) as p:
             self._particles = p.starmap(_integ, args)
+        self.run_time = time.time() - start_time
 
     def init_particles(
             self,
