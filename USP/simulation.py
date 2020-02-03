@@ -25,7 +25,7 @@ import pickle
 import time
 
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.animation as animation
 
 
 def _integ(particle, potential, t_0, t_end, dt, out_times):
@@ -195,6 +195,13 @@ class Simulation:
             for i in range(particle_no)
             ]
 
+    def get_total_energy(self, t):
+        """
+        Get the total energy (KE + potential) at a specified time 
+        """
+        energies = [p.energy(t, self._trap.potential) for p in self._particles]
+        return np.sum(np.array(energies))
+
     def plot_start_end_positions(self):
         """
         """
@@ -263,9 +270,49 @@ class Simulation:
         else:
             plt.show()
 
-    def get_total_energy(self, t):
+    def animate(
+            self,
+            N_frames,
+            output_path = None,
+            write_fps = 30,
+            write_bitrate = 1800,
+            interval = 50
+            ):
         """
-        Get the total energy (KE + potential) at a specified time 
+        Animate the motion of the particles in the trap.
+
+        Args:
+        N_frames: int, number of frames to animate
+        output_path: str or None, if str then provides path to save video file
+        write_fps: int, fps at which to save video
+        write_bitrate: int
+        interval: int
         """
-        energies = [p.energy(t, self._trap.potential) for p in self._particles]
-        return np.sum(np.array(energies))
+        # Get data for frames
+        frame_times = np.linspace(self._t_0, self._t_end, N_frames)
+        data = [np.array(self.get_rs(t)).transpose() for t in frame_times]
+        data = np.array(data)
+        # Initialise figure and start position
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
+        # Function to update animation
+        def update(frame, scatter):
+            scatter._offsets3d = data[frame, :, :]
+            return scatter
+        # Animate
+        ani = animation.FuncAnimation(
+                fig,
+                update,
+                N_frames,
+                fargs=(scatter),
+                interval=interval,
+                blit=False
+                )
+        # Display or save
+        if output_path is not None:
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=write_fps, bitrate=write_bitrate)
+            ani.save(output_path, writer=writer)
+        else:
+            plt.show()
