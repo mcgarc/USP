@@ -211,22 +211,26 @@ class Simulation:
             particle_index,
             dir_index,
             N_points,
+            output_path = None,
             time_gradient=False,
             colorbar=False,
+            figsize=(6,4),
+            dpi=300,
             **plot_kwargs
             ):
         """
         Plot the phase space diagram of a particle in the trap over time.
 
-        TODO: Indicate time with colour (?)
-
         Args:
         particle_index: int, the paticle whose PSD is to be shown
         dire_index: int, corresponds to the x, y or z direction
         N_points: int, no. of points to plot
+        output_path: str or None, if None then show graph, otherwise save it
         time_gradient: bool, if true then shade the points for time
         colorbar: bool, if time_gradient is true then colorbar will create a
             colour legend for the times
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         plot_kwargs: kwargs to be passed to the scatter plot fn
         """
         # Get coordinates
@@ -237,12 +241,16 @@ class Simulation:
         # Setup time gradient if required
         if time_gradient:
             plot_kwargs['c'] = times
-            plt.winter()
         # Create plot
-        plt.scatter(Q_projections[0], Q_projections[1], **plot_kwargs)
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.05,0.05,0.8,0.8])
+        cm = plt.get_cmap('winter')
+        sc = ax.scatter(Q_projections[0], Q_projections[1], cmap=cm, **plot_kwargs)
         # Colorbar
         if time_gradient and colorbar:
-            plt.colorbar().ax.tick_params(labelsize=14)
+            cbar = plt.colorbar(sc)
+            cbar.ax.tick_params(labelsize=14)
+            cbar.set_label('time', fontsize=20)
         # Label axes
         dir_label = {0:'x', 1:'y', 2:'z'}[dir_index]
         plt.title(f'Phase space projection in {dir_label} direction', fontsize=24)
@@ -250,7 +258,10 @@ class Simulation:
         plt.ylabel(f'v_{dir_label}', fontsize=20)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
-        plt.show()
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
 
     def get_total_energy(self, t):
         """
