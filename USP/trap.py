@@ -5,6 +5,25 @@ from USP.field import StaticField
 
 from USP import parameter
 
+class AbstractPotentialTrap:
+    """
+    AbstractPotentialTrap is a trap that takes a potential function supplied
+    directly by the user. Useful for when a simple potential can be provided
+    without the need for significant construction.
+    """
+
+    def __init__(self, potential_function):
+        """
+        Takes the potential function (with args r and t) that can be evaluated
+        """
+        # TODO Check that potential_function is of the correct form
+        self.potential_function = potential_function
+
+    def potential(self, r, t):
+        """
+        """
+        return self.potential_function(r, t)
+
 class AbstractTrap:
 
     def __init__(self):

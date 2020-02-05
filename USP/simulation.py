@@ -78,6 +78,8 @@ class Simulation:
             self._trap = None
         elif isinstance(trap, USP_trap.AbstractTrap):
             self._trap = trap
+        elif isinstance(trap, USP_trap.AbstractPotentialTrap):
+            self._trap = trap
         else:
             raise ValueError(
             'trap is not of valid type, expected None or AbstractTrap'
@@ -295,6 +297,7 @@ class Simulation:
         # Initialise figure and start position
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
+        ax.set(xlim=(-0.2, 100))
         scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
         # Function to update animation
         def update(frame, scatter):
