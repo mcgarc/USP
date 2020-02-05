@@ -19,3 +19,6 @@ u_CaF = 1.54E4
 
 # Boltzmann constant
 k_B = 1.38E-23
+
+# Bohr Magneton
+u_B = 9.27E-24
