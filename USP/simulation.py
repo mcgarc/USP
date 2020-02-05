@@ -226,7 +226,7 @@ class Simulation:
               ],
               mass
               )
-            for i in range(particle_no)
+            for i in range(int(particle_no))
             ]
 
         # Save no. of particles for reference
