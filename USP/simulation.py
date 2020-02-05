@@ -23,6 +23,7 @@ from itertools import repeat
 import multiprocessing as mp
 import pickle
 import time
+import csv
 
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -98,6 +99,37 @@ class Simulation:
         """
         vs = [ p.v(t) for p in self._particles ]
         return vs
+
+    # TODO Improve output/ fix
+    def save_sim_info(self, filename):
+        """
+        Save information on the string
+
+        Args:
+        filename: str, file to save csv
+        """
+        output = f'''
+        Start: {self._t_0}
+        End: {self._t_end}
+        No. of particles: {self._N_particles}
+        '''
+        with open(filename, 'w') as f:
+            f.write(self._particles, f)
+
+    def save_Q_to_csv(self, t, filename):
+        """
+        Save Q(t) for each particle as CSV
+
+        Args:
+        t: float, time to get Q
+        filename: str, file to save csv
+        """
+
+        with open(filename, 'w') as f:
+            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+            for p in self._particles:
+                row = [p.index] + list(p.Q(t))
+                wr.writerow(row)
 
     def save_to_pickle(self, filename):
         """
@@ -196,6 +228,9 @@ class Simulation:
               )
             for i in range(particle_no)
             ]
+
+        # Save no. of particles for reference
+        self._N_particles = particle_no
 
     def get_total_energy(self, t):
         """
@@ -297,7 +332,8 @@ class Simulation:
         # Initialise figure and start position
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        ax.set(xlim=(-0.2, 100))
+        xylim =0.05
+        ax.set(xlim=(-xylim, xylim), ylim=(-xylim,xylim), zlim=(-0.2, 2))
         scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
         # Function to update animation
         def update(frame, scatter):

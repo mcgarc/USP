@@ -22,18 +22,17 @@ def main():
     v_z = 144
     sim = simulation.Simulation(4, z_guide, 0, t_end, 1E-6)
     sim.init_particles(100, mass, r_spread, v_spread, v_centre=[0, 0, v_z])
+    sim.save_Q_to_csv(0, 'results/start_Q.csv')
     sim.run()
-    print(f'runtime: {sim.run_time}')
+    sim.save_Q_to_csv(t_end, 'results/end_Q.csv')
 
+    # Diagnosis
+    print(f'runtime: {sim.run_time}')
     print(sim.get_total_energy(0))
     print(sim.get_total_energy(t_end))
 
     # Visualisation
     sim.plot_start_end_positions()
-
-#    sim.plot_phase_diagram(0, 0, 100, time_gradient=True, colorbar=True,
-#            output_path='results/phasespace_x')
-
     sim.animate(500, output_path='results/zeeman.mp4')
 
 if __name__ == '__main__':
