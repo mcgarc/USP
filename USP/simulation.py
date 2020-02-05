@@ -168,9 +168,9 @@ class Simulation:
             np.seed(seed)
 
         # Clean sigma input into np arrays of length 3
-        if type(r_sigma) in [float, int]:
+        if type(r_sigma) in [float, int, np.float64]:
             r_sigma = [r_sigma, r_sigma, r_sigma]
-        if type(v_sigma) in [float, int]:
+        if type(v_sigma) in [float, int, np.float64]:
             v_sigma = [v_sigma, v_sigma, v_sigma]
         r_sigma = utils.clean_vector(r_sigma)
         v_sigma = utils.clean_vector(v_sigma)
