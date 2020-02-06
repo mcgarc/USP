@@ -24,6 +24,7 @@ import multiprocessing as mp
 import pickle
 import time
 import csv
+from textwrap import dedent
 
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -42,22 +43,23 @@ class Simulation:
     """
 
     def __init__(self,
-            process_no,
             trap,
             t_0,
             t_end,
             dt,
+            process_no = None
             ):
         """
         """
-        self._process_no = process_no
         self.set_trap(trap)
         self._t_0 = t_0
         self._t_end = t_end
         self._dt = dt
+        self._process_no = process_no
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
         self.run_time = None
+        
 
     @property
     def particles(self):
@@ -83,7 +85,8 @@ class Simulation:
             self._trap = trap
         else:
             raise ValueError(
-            'trap is not of valid type, expected None or AbstractTrap'
+            '''trap is not of valid type, expected None, AbstractTrap or
+            AbstractPotentialTrap'''
             )
 
     def get_rs(self, t):
@@ -164,11 +167,39 @@ class Simulation:
                 repeat([0, self._t_end]) # FIXME Should be arbitrary
                 )
 
+        # Check processes available
+        available = mp.cpu_count()
+        if self._process_no is None:
+            process_no = available
+        elif self._process_no > available:
+            raise RuntimeWarning(
+                f'''
+                Requested process no. ({self._process_no}) exceeds available
+                cores ({available}). Running with available cores.
+                '''
+                )
+            process_no = available
+        else:
+            process_no = self._process_no
+
+        # Announce
+        print(dedent(f'''
+                Running simulation
+                Particles: {self._N_particles}
+                Processes: {process_no}
+                Time: {self._t_end - self._t_0}
+                dt: {self._dt}
+                '''
+                )
+        )
+
         # Multiprocessing
         start_time = time.time()
-        with mp.Pool(self._process_no) as p:
+        with mp.Pool(process_no) as p:
             self._particles = p.starmap(_integ, args)
         self.run_time = time.time() - start_time
+
+        print(f'Complete, runtime: {self.run_time}')
 
     def init_particles(
             self,
