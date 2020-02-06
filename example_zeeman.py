@@ -21,7 +21,7 @@ def main():
     v_spread = np.sqrt(2*consts.k_B*T/mass)
     v_z = 144
     sim = simulation.Simulation(z_guide, 0, t_end, 1E-6)
-    sim.init_particles(10, mass, r_spread, v_spread, v_centre=[0, 0, v_z])
+    sim.init_particles(30, mass, r_spread, v_spread, v_centre=[0, 0, v_z])
     sim.save_Q_to_csv(0, 'results/start_Q.csv')
     sim.run()
     sim.save_Q_to_csv(t_end, 'results/end_Q.csv')
@@ -32,7 +32,9 @@ def main():
 
     # Visualisation
     sim.plot_start_end_positions()
-    #sim.animate(500, output_path='results/zeeman.mp4')
+    xylim =0.005
+    sim.animate(500, xlim=(-xylim, xylim), ylim=(-xylim, xylim), zlim=(-0.2,2))
+            #, output_path='results/zeeman.mp4')
 
 if __name__ == '__main__':
     main()

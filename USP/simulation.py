@@ -344,7 +344,10 @@ class Simulation:
             output_path = None,
             write_fps = 30,
             write_bitrate = 1800,
-            interval = 50
+            interval = 50,
+            xlim = None,
+            ylim = None,
+            zlim = None
             ):
         """
         Animate the motion of the particles in the trap.
@@ -355,6 +358,7 @@ class Simulation:
         write_fps: int, fps at which to save video
         write_bitrate: int
         interval: int
+        *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
         frame_times = np.linspace(self._t_0, self._t_end, N_frames)
@@ -363,8 +367,13 @@ class Simulation:
         # Initialise figure and start position
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        xylim =0.05
-        ax.set(xlim=(-xylim, xylim), ylim=(-xylim,xylim), zlim=(-0.2, 2))
+        # Set axes
+        if xlim != None:
+            ax.set(xlim=xlim)
+        if ylim != None:
+            ax.set(ylim=ylim)
+        if zlim != None:
+            ax.set(zlim=zlim)
         scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
         # Function to update animation
         def update(frame, scatter):
