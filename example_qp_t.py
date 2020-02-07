@@ -11,7 +11,6 @@ class QuadrupoleFieldMoving(field.QuadrupoleField):
         """
         Change in r over time
         """
-        return np.array([0, 0, 0])
         return np.array([0, 0, t/2.])
 
     def field(self, t, r):
