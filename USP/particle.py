@@ -151,10 +151,11 @@ class Particle:
         """
         Create and solve initial value problem for the particle. Takes the
         potential (which we expect to be a function of t and r) and a boundary
-        time. Can take the initial time (assumed zero) and a maximum allowed
-        step (assumed inf)
+        time. 
 
         Args:
+        potential: method, with args (t, r). Passed to _dQ_dt. e.g. a
+        `trap.potential`
         t0: float, starting time
         t_end: float, end time
         dt: float, step
