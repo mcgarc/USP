@@ -8,8 +8,14 @@ License, either version 3 of the license or any later version.
 This file provides useful physical constants
 """
 
+# Atomic mass (kg)
+u = 1.6605E-27
+
 # Mass of CaF molecule (kg)
 m_CaF = 9.7907E-26
+
+# Mass of Rb atom (kg)
+m_Rb = 85.4678 * u
 
 # Rotational constant of CaF molecule (Hz)
 B_CaF = 1.02675E10
