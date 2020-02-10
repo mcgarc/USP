@@ -84,7 +84,10 @@ class Particle:
             else:
                 return np.concatenate((self._r, self._v)) # Q(t=0)
         else:
-            return self._integ[t][1] # 1 gets y part
+            # Use float(t) to ensure we are indexing time, not position in list
+            # (an int will get the nth entry)
+            # Use [1] as second index to extract the y part of the state
+            return self._integ[float(t)][1]
 
     def r(self, t):
         return self.Q(t)[:3]
