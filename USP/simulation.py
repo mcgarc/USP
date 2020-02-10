@@ -18,6 +18,7 @@ _integ: Used to call integration method of a particle in multiprocessing
 from USP import trap as USP_trap
 from USP import particle
 from USP import utils
+from USP import consts
 import numpy as np
 from itertools import repeat
 import multiprocessing as mp
@@ -93,6 +94,7 @@ class Simulation:
         """
         Return a list of all particles positions at the given time
         """
+        # TODO Raise error if no particles
         rs = [ p.r(t) for p in self._particles ]
         return rs
 
@@ -100,8 +102,24 @@ class Simulation:
         """
         Return a list of all particles velocities at the given time
         """
+        # TODO Raise error if no particles
         vs = [ p.v(t) for p in self._particles ]
         return vs
+
+    def get_KEs(self, t):
+        """
+        """
+        # TODO Raise error if no particles
+        kinetics = [ p.kinetic_energy(t) for p in self._particles ]
+        return kinetics
+
+    def temperature(self, t):
+        """
+        """
+        # TODO Raise error if no particles
+        kinetics = self.get_KEs(t)
+        kinetics_std = np.std(kinetics)
+        return kinetics_std / consts.k_B
 
     # TODO Improve output/ fix
     def save_sim_info(self, filename):
@@ -201,6 +219,8 @@ class Simulation:
 
         print(f'Complete, runtime: {self.run_time}')
 
+    # TODO Initialisation parameters should be passed to init, and this function
+    # called automatically unless flagged not to
     def init_particles(
             self,
             particle_no,
@@ -226,6 +246,8 @@ class Simulation:
         Output:
         None, populates self._particles
         """
+
+        self._mass = mass # Save for use in temperature calculations see TODO
 
         if seed is not None:
             np.seed(seed)
@@ -279,6 +301,14 @@ class Simulation:
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
+        plt.show()
+
+    def plot_temperatures(self, N_points=50):
+        """
+        """
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        temps = [self.temperature(t) for t in times]
+        plt.scatter(times, temps)
         plt.show()
 
     def plot_phase_diagram(
