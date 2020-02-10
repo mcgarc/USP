@@ -54,9 +54,10 @@ def main():
 
     sim.plot_start_end_positions()
     sim.plot_temperatures()
+    sim.plot_center()
     xylim = (-1E-2, 1E-2)
     zlim = (-1E-3, 0.121)
-    sim.animate(2000, xlim=xylim, ylim=xylim, zlim=zlim, output_path='results/qp_move.mp4')
+    #sim.animate(2000, xlim=xylim, ylim=xylim, zlim=zlim, output_path='results/qp_move.mp4')
 
 if __name__ == '__main__':
     main()

@@ -121,6 +121,17 @@ class Simulation:
         kinetics_std = np.std(kinetics)
         return kinetics_std / consts.k_B
 
+    def center(self, t):
+        """
+        """
+        # TODO Raise error if no particles
+        rs = np.array(self.get_rs(t))
+        rs_T = rs.transpose()
+        x_mean = np.mean(rs_T[0])
+        y_mean = np.mean(rs_T[1])
+        z_mean = np.mean(rs_T[2])
+        return np.array([x_mean, y_mean, z_mean])
+
     # TODO Improve output/ fix
     def save_sim_info(self, filename):
         """
@@ -309,6 +320,14 @@ class Simulation:
         times = np.linspace(self._t_0, self._t_end, N_points)
         temps = [self.temperature(t) for t in times]
         plt.scatter(times, temps)
+        plt.show()
+
+    def plot_center(self, N_points=50, direction=2):
+        """
+        """
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        centers = [self.center(t)[direction] for t in times]
+        plt.scatter(times, centers)
         plt.show()
 
     def plot_phase_diagram(
