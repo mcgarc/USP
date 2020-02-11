@@ -3,13 +3,15 @@ import csv
 
 DX = 1E-6
 
-def clean_vector(vector, length=3):
+def clean_vector(vector, length=3, cast_type=None):
     """
     Ensure a vector is of the right length and format before setting it
     """
     vector = np.array(vector)
     if len(vector) != length:
         raise ValueError(f'Vector should have length {length}')
+    if cast_type is not None:
+        vector = vector.astype(cast_type)
     return vector
 
 def grad(f, t, r, direction, delta=DX):
