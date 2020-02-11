@@ -117,9 +117,9 @@ class Simulation:
         """
         """
         # TODO Raise error if no particles
-        kinetics = self.get_KEs(t)
+        kinetics = self.get_KEs(t) 
         kinetics_std = np.std(kinetics)
-        return kinetics_std / consts.k_B
+        return kinetics_std / (3 * consts.k_B)
 
     def center(self, t):
         """
@@ -131,6 +131,17 @@ class Simulation:
         y_mean = np.mean(rs_T[1])
         z_mean = np.mean(rs_T[2])
         return np.array([x_mean, y_mean, z_mean])
+
+    def width(self, t):
+        """
+        """
+        # TODO Raise error if no particles
+        rs = np.array(self.get_rs(t))
+        rs_T = rs.transpose()
+        x_std = np.std(rs_T[0])
+        y_std = np.std(rs_T[1])
+        z_std = np.std(rs_T[2])
+        return np.array([x_std, y_std, z_std])
 
     # TODO Improve output/ fix
     def save_sim_info(self, filename):
@@ -347,14 +358,43 @@ class Simulation:
         """
         # Get data
         times = np.linspace(self._t_0, self._t_end, N_points)
-        temps = [1E3 * self.temperature(t) for t in times]
+        temps = [1E6 * self.temperature(t) for t in times]
         # Create figure and labels
         fig = plt.figure(figsize=figsize, dpi=dpi)
         ax = fig.add_axes([0.1,0.1,0.8,0.8])
         ax.scatter(times, temps)
         plt.title(f'Cloud temperature', fontsize=24)
         plt.xlabel('time (s)', fontsize=20)
-        plt.ylabel('temperature (mK)', fontsize=20)
+        plt.ylabel('temperature (uK)', fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        # Display or save
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
+
+    def plot_width(
+            self,
+            N_points=50,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            direction=0,
+            ):
+        """
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        direction, dir_label  = utils.clean_direction_index(direction, True)
+        widths = [1E3 * self.width(t)[direction] for t in times]
+        # Create figure and labels
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax.scatter(times, widths)
+        plt.title(f'Cloud width in {dir_label}', fontsize=24)
+        plt.xlabel('time (s)', fontsize=20)
+        plt.ylabel('width (mm)', fontsize=20)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         # Display or save
@@ -370,6 +410,7 @@ class Simulation:
             output_path = None,
             figsize=(6,4),
             dpi=300,
+            dist_unit = 'm'
             ):
         """
         Plot the mean position of the cloud a s a function of time
@@ -391,7 +432,7 @@ class Simulation:
         ax.scatter(times, centers)
         plt.title(f'Cloud centre position along {dir_label} direction', fontsize=24)
         plt.xlabel('time (s)', fontsize=20)
-        plt.ylabel(f'{dir_label} (m)', fontsize=20)
+        plt.ylabel(f'{dir_label} ({dist_unit})', fontsize=20)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         # Display or save
