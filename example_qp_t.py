@@ -2,31 +2,6 @@ from USP import *
 import time
 import numpy as np
 
-class QuadrupoleFieldMoving(field.QuadrupoleField):
-    """
-    Adapt quadrupole field to move in time
-    """
-
-    def D_r(self, t, t_start=4, t_end=14, r_shift=0.1, v=1):
-        """
-        Change in r over time
-        """
-        t_start = float(t_start)
-        t_end = float(t_end)
-        r_shift = float(r_shift)
-        if t < t_start:
-            return np.array([0, 0, 0])
-        elif t > t_end:
-            return np.array([0, 0, r_shift])
-        else:
-            denom = 1 + np.exp(-v * (t - (t_start + t_end)/2))
-            r = r_shift / denom
-            return np.array([0, 0, r])
-
-    def field(self, t, r):
-        r = np.array(r) - self.r_0 - self.D_r(t)
-        scale = np.array([-0.5, -0.5, 1.])
-        return self.b_1 * scale * r
 
 def main():
     """
@@ -34,7 +9,8 @@ def main():
     """
 
     # Initialise QP
-    qp = QuadrupoleFieldMoving(consts.u_B * 0.6)
+    height = parameter.SigmoidParameter(0, 1, 4, 14, 1)
+    qp = field.QuadrupoleFieldTranslate(consts.u_B * 0.6, height)
     qp_trap = trap.FieldTrap(qp.field)
 
     # Initial conditions
@@ -46,7 +22,7 @@ def main():
     # Simulation
     t_end = 20
     sim = simulation.Simulation(qp_trap, 0, t_end, 1E-3)
-    sim.init_particles(50, mass, r_spread, v_spread)
+    sim.init_particles(20, mass, r_spread, v_spread)
     sim.run()
 
     print(sim.get_total_energy(0))

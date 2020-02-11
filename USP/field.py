@@ -47,9 +47,36 @@ class QuadrupoleField:
         r_0: list-like, zero position (optional, default [0,0,0])
         """
         self.b_1 = b_1
-        self.r_0 = utils.clean_vector(r_0)
+        self.r_0 = utils.clean_vector(r_0, cast_type=float)
 
     def field(self, t, r):
         r = np.array(r) - self.r_0
         scale = np.array([-0.5, -0.5, 1])
+        return self.b_1 * scale * r
+
+class QuadrupoleFieldTranslate(QuadrupoleField):
+    """
+    Quadrupole field translating in time
+    """
+
+    def __init__(
+            self,
+            b_1,
+            parameter,
+            r_0=[0,0,0],
+            direction=2
+            ):
+        """
+        """
+        super().__init__(b_1, r_0)
+        # TODO Parmeter clean
+        self.p = parameter
+        # TODO Direction clean
+        self.direction = direction
+
+    def field(self, t, r):
+        r_0 = self.r_0.copy()
+        r_0[self.direction] = self.p.value(t)
+        r = np.array(r) - r_0
+        scale = np.array([-0.5, -0.5, 1.])
         return self.b_1 * scale * r
