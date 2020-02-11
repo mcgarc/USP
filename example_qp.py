@@ -17,9 +17,9 @@ def main():
     v_spread = np.sqrt(2*consts.k_B*T/mass)
  
     # Simulation
-    t_end = 1
+    t_end = 20
     sim = simulation.Simulation(qp_trap, 0, t_end, 1E-3)
-    sim.init_particles(50, mass, r_spread, v_spread)
+    sim.init_particles(100, mass, r_spread, v_spread)
     sim.run()
 
     print(sim.get_total_energy(0))
