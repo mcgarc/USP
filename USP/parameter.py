@@ -165,3 +165,48 @@ class RampParameter(StepParameter):
         else:
             # Constant phase
             return values[int(region_index/2)]
+
+class SigmoidParameter(AbstractParameterProfile):
+    """
+    Simple ramp of parameter between values following a sigmoid.
+    """
+
+    def __init__(
+            self,
+            p_0,
+            p_1,
+            t_0,
+            t_1,
+            v
+            ):
+        """
+        SigmoidParameter constructor
+
+        Args:
+        p_0: float, initial value of parameter
+        p_1: float, final value of parameter
+        t_0: float, ramp start time
+        t_1: float, ramp end time
+        v: float, ramp speed
+        """
+        self.p_0 = float(p_0)
+        self.p_1 = float(p_1)
+        self.t_0 = float(t_0)
+        self.t_1 = float(t_1)
+        self.v = float(v)
+
+    def value(self, t):
+        """
+        Return the value of the Parameter at a given time
+
+        Args:
+        t: float, time of evaluation
+        """
+        if t < self.t_0:
+            return self.p_0
+        elif t > self.t_1:
+            return self.p_1
+        else:
+            denom = 1 + np.exp(-self.v * (t - (self.t_0 + self.t_1)/2))
+            p = self.p_0 + (self.p_1 - self.p_0) / denom
+            return p
