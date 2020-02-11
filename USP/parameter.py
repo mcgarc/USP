@@ -177,7 +177,8 @@ class SigmoidParameter(AbstractParameterProfile):
             p_1,
             t_0,
             t_1,
-            v
+            v,
+            end_cap=False
             ):
         """
         SigmoidParameter constructor
@@ -188,6 +189,8 @@ class SigmoidParameter(AbstractParameterProfile):
         t_0: float, ramp start time
         t_1: float, ramp end time
         v: float, ramp speed
+        end_cap: bool, if true, forces exact values of p_0 and p_1 for t < t_0
+        and t > t_1 respectively
         """
         self.p_0 = float(p_0)
         self.p_1 = float(p_1)
@@ -202,9 +205,9 @@ class SigmoidParameter(AbstractParameterProfile):
         Args:
         t: float, time of evaluation
         """
-        if t < self.t_0:
+        if t < self.t_0 and end_cap:
             return self.p_0
-        elif t > self.t_1:
+        elif t > self.t_1 and end_cap:
             return self.p_1
         else:
             denom = 1 + np.exp(-self.v * (t - (self.t_0 + self.t_1)/2))
