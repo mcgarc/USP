@@ -314,21 +314,91 @@ class Simulation:
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
-    def plot_temperatures(self, N_points=50):
+    def _plot_scatter_data_with_time(
+            self,
+            time_function, 
+            N_points=50,
+            direction=2,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            ):
         """
-        """
-        times = np.linspace(self._t_0, self._t_end, N_points)
-        temps = [self.temperature(t) for t in times]
-        plt.scatter(times, temps)
-        plt.show()
+        Abstracted plotting data
 
-    def plot_center(self, N_points=50, direction=2):
+        Args:
+        N_points: int, no. of points to plot
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        raise NotImplemented
+
+
+    def plot_temperatures(
+            self,
+            N_points=50,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            ):
         """
         """
+        # Get data
         times = np.linspace(self._t_0, self._t_end, N_points)
+        temps = [1E3 * self.temperature(t) for t in times]
+        # Create figure and labels
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax.scatter(times, temps)
+        plt.title(f'Cloud temperature', fontsize=24)
+        plt.xlabel('time', fontsize=20)
+        plt.ylabel('temperature (mK)', fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        # Display or save
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
+
+    def plot_center(
+            self,
+            N_points=50,
+            direction=2,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            ):
+        """
+        Plot the mean position of the cloud a s a function of time
+
+        Args:
+        N_points: int, no. of points to plot
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        direction, dir_label = utils.clean_direction_index(direction, True)
         centers = [self.center(t)[direction] for t in times]
-        plt.scatter(times, centers)
-        plt.show()
+        # Create figure and labels
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax.scatter(times, centers)
+        plt.title(f'Cloud centre position along {dir_label} direction', fontsize=24)
+        plt.xlabel('time', fontsize=20)
+        plt.ylabel(f'{dir_label}', fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        # Display or save
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
 
     def plot_phase_diagram(
             self,
