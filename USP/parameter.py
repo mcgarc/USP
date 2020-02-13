@@ -197,6 +197,7 @@ class SigmoidParameter(AbstractParameterProfile):
         self.t_0 = float(t_0)
         self.t_1 = float(t_1)
         self.v = float(v)
+        self.end_cap = end_cap
 
     def value(self, t):
         """
@@ -205,9 +206,9 @@ class SigmoidParameter(AbstractParameterProfile):
         Args:
         t: float, time of evaluation
         """
-        if t < self.t_0 and end_cap:
+        if self.end_cap and t < self.t_0:
             return self.p_0
-        elif t > self.t_1 and end_cap:
+        elif self.end_cap and t > self.t_1:
             return self.p_1
         else:
             denom = 1 + np.exp(-self.v * (t - (self.t_0 + self.t_1)/2))
