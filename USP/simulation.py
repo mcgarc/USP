@@ -373,6 +373,7 @@ class Simulation:
             fig.savefig(output_path, bbox_inches='tight')
         else:
             plt.show()
+        plt.close()
 
     def plot_width(
             self,
@@ -402,6 +403,7 @@ class Simulation:
             fig.savefig(output_path, bbox_inches='tight')
         else:
             plt.show()
+        plt.close()
 
     def plot_center(
             self,
@@ -440,6 +442,7 @@ class Simulation:
             fig.savefig(output_path, bbox_inches='tight')
         else:
             plt.show()
+        plt.close()
 
     def plot_phase_diagram(
             self,
@@ -497,6 +500,7 @@ class Simulation:
             fig.savefig(output_path, bbox_inches='tight')
         else:
             plt.show()
+        plt.close()
 
     def animate(
             self,
@@ -555,3 +559,4 @@ class Simulation:
             ani.save(output_path, writer=writer)
         else:
             plt.show()
+        plt.close()
