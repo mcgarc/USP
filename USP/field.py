@@ -10,6 +10,8 @@ Classes:
 
 StaticField: Provides field method for an arbitrary constant field
 QuadrupoleField: Provides field method for a quadrupolar field
+QuadrupoleFieldTranslate: Similar to the above but with ability to move the trap
+centre as time progresses
 """
 
 import numpy as np
@@ -31,6 +33,13 @@ class StaticField:
         self.field_array = np.array(field_array)
 
     def field(self, t, r):
+        """
+        Returns the field value at event t, r
+
+        Args:
+        t: float, time
+        r: list-like, spatial position
+        """
         return self.field_array
         
 class QuadrupoleField:
@@ -50,32 +59,57 @@ class QuadrupoleField:
         self.r_0 = utils.clean_vector(r_0, cast_type=float)
 
     def field(self, t, r):
+        """
+        Returns the field value at event t, r
+
+        Args:
+        t: float, time
+        r: list-like, spatial position
+        """
         r = np.array(r) - self.r_0
         scale = np.array([-0.5, -0.5, 1])
         return self.b_1 * scale * r
 
 class QuadrupoleFieldTranslate(QuadrupoleField):
     """
-    Quadrupole field translating in time
+    Quadrupole field translating in time. Move in a cardinal direction depending
+    according to some parameter
     """
 
     def __init__(
             self,
             b_1,
-            parameter,
+            param,
             r_0=[0,0,0],
             direction=2
             ):
         """
+        Constructor for QuadrupoleFieldTranslate
+
+        Args:
+        b_1: float, field gradient
+        param: USP.parameter object, determines position along `direction` axis
+        r_0: list-like, zero position (optional, default [0,0,0])
+        direction: str or int, represents the (cardinal) direction of
+        translation
         """
         super().__init__(b_1, r_0)
-        # TODO Parmeter clean
-        self.p = parameter
+        # FIXME importing USP.parameter breaks multiprocessing
+        #if not isinstance(param, parameter.AbstractParameterProfile):
+        #    raise ValueError('QuadrupoleFieldTranslate expects a USP parameter')
+        self.param = param
         self.direction = utils.clean_direction_index(direction)
 
     def field(self, t, r):
+        """
+        Returns the field value at event t, r
+
+        Args:
+        t: float, time
+        r: list-like, spatial position
+        """
         r_0 = self.r_0.copy()
-        r_0[self.direction] = self.p.value(t)
+        r_0[self.direction] = self.param.value(t)
         r = np.array(r) - r_0
         scale = np.array([-0.5, -0.5, 1.])
         return self.b_1 * scale * r
