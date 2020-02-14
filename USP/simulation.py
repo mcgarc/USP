@@ -64,6 +64,7 @@ class Simulation:
 
     @property
     def particles(self):
+        self._check_particles()
         return self._particles
 
     @property
@@ -73,6 +74,16 @@ class Simulation:
         exporting
         """
         raise NotImplemented
+
+    def _check_particles(self, message = None):
+        """
+        Raise runtime error if user tries to access particles before
+        initialisation
+        """
+        if message is None:
+            message = 'No particles have yet been initialised'
+        if self._particles is None:
+            raise RuntimeError(message)
 
     def set_trap(self, trap):
         """
@@ -94,7 +105,6 @@ class Simulation:
         """
         Return a list of all particles positions at the given time
         """
-        # TODO Raise error if no particles
         rs = [ p.r(t) for p in self._particles ]
         return rs
 
@@ -102,21 +112,25 @@ class Simulation:
         """
         Return a list of all particles velocities at the given time
         """
-        # TODO Raise error if no particles
         vs = [ p.v(t) for p in self._particles ]
         return vs
+
+    def get_ps(self, t):
+        """
+        Return a list of all particle momenta at the given time
+        """
+        ps = [p.v(t) * p.m for p in self._particles ]
+        return ps
 
     def get_KEs(self, t):
         """
         """
-        # TODO Raise error if no particles
         kinetics = [ p.kinetic_energy(t) for p in self._particles ]
         return kinetics
 
     def temperature(self, t):
         """
         """
-        # TODO Raise error if no particles
         kinetics = self.get_KEs(t) 
         kinetics_std = np.std(kinetics)
         return kinetics_std / (3 * consts.k_B)
@@ -124,7 +138,6 @@ class Simulation:
     def center(self, t):
         """
         """
-        # TODO Raise error if no particles
         rs = np.array(self.get_rs(t))
         rs_T = rs.transpose()
         x_mean = np.mean(rs_T[0])
@@ -135,13 +148,22 @@ class Simulation:
     def width(self, t):
         """
         """
-        # TODO Raise error if no particles
         rs = np.array(self.get_rs(t))
         rs_T = rs.transpose()
         x_std = np.std(rs_T[0])
         y_std = np.std(rs_T[1])
         z_std = np.std(rs_T[2])
         return np.array([x_std, y_std, z_std])
+
+    def momentum_width(self, t):
+        """
+        """
+        ps = np.array(self.get_ps(t))
+        ps_T = ps.transpose()
+        p_x_std = np.std(ps_T[0])
+        p_y_std = np.std(ps_T[1])
+        p_z_std = np.std(ps_T[2])
+        return np.array([p_x_std, p_y_std, p_z_std])
 
     # TODO Improve output/ fix
     def save_sim_info(self, filename):
@@ -442,6 +464,74 @@ class Simulation:
                 f'Cloud centre position along {dir_label} direction',
                 'time (s)',
                 f'{dir_label} ({dist_unit})',
+                figsize,
+                dpi,
+                output_path
+                )
+
+    def plot_cloud_volume(
+            self,
+            N_points=50,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            dist_unit = 'm'
+            ):
+        """
+        Plot the volume of the cloud as a function of time
+
+        Args:
+        N_points: int, no. of points to plot
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        vols = [ 1E9 * np.prod(self.width(t)) for t in times ]
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                vols,
+                f'Cloud volume',
+                'time (s)',
+                f'Volume (mm^3)',
+                figsize,
+                dpi,
+                output_path
+                )
+
+    def plot_cloud_phase_space_volume(
+            self,
+            N_points=50,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            dist_unit = 'm'
+            ):
+        """
+        Plot the phase space volume of the cloud
+
+        Args:
+        N_points: int, no. of points to plot
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        vols = [ 1E9 * np.prod(self.width(t)) * np.prod(self.momentum_width(t))
+                / consts.u**3
+            for t in times ]
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                vols,
+                f'Cloud volume',
+                'time (s)',
+                f'Volume ((atomic mass * mm)^3)',
                 figsize,
                 dpi,
                 output_path
