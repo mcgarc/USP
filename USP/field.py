@@ -71,8 +71,7 @@ class QuadrupoleFieldTranslate(QuadrupoleField):
         super().__init__(b_1, r_0)
         # TODO Parmeter clean
         self.p = parameter
-        # TODO Direction clean
-        self.direction = direction
+        self.direction = utils.clean_direction_index(direction)
 
     def field(self, t, r):
         r_0 = self.r_0.copy()
