@@ -325,14 +325,16 @@ class Simulation:
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
-    def _plot_scatter_data_with_time(
+    def _plot_2D_scatter(
             self,
-            time_function, 
-            N_points=50,
-            direction=2,
-            output_path = None,
-            figsize=(6,4),
-            dpi=300,
+            data_x,
+            data_y,
+            title,
+            label_x,
+            label_y,
+            figsize,
+            dpi,
+            output_path
             ):
         """
         Abstracted plotting data
@@ -344,7 +346,20 @@ class Simulation:
         figsize: pair of ints, size of output plot
         dpi:int, dpi of output plot
         """
-        raise NotImplemented
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax.scatter(data_x, data_y)
+        plt.title(title, fontsize=24)
+        plt.xlabel(label_x, fontsize=20)
+        plt.ylabel(label_y, fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        # Display or save
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
+        plt.close()
 
 
     def plot_temperatures(
@@ -359,21 +374,17 @@ class Simulation:
         # Get data
         times = np.linspace(self._t_0, self._t_end, N_points)
         temps = [1E6 * self.temperature(t) for t in times]
-        # Create figure and labels
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
-        ax.scatter(times, temps)
-        plt.title(f'Cloud temperature', fontsize=24)
-        plt.xlabel('time (s)', fontsize=20)
-        plt.ylabel('temperature (uK)', fontsize=20)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-        # Display or save
-        if output_path is not None:
-            fig.savefig(output_path, bbox_inches='tight')
-        else:
-            plt.show()
-        plt.close()
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                temps,
+                f'Cloud temperature',
+                'time (s)',
+                'temperature (uK)',
+                figsize,
+                dpi,
+                output_path
+                )
 
     def plot_width(
             self,
@@ -389,21 +400,17 @@ class Simulation:
         times = np.linspace(self._t_0, self._t_end, N_points)
         direction, dir_label  = utils.clean_direction_index(direction, True)
         widths = [1E3 * self.width(t)[direction] for t in times]
-        # Create figure and labels
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
-        ax.scatter(times, widths)
-        plt.title(f'Cloud width in {dir_label}', fontsize=24)
-        plt.xlabel('time (s)', fontsize=20)
-        plt.ylabel('width (mm)', fontsize=20)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-        # Display or save
-        if output_path is not None:
-            fig.savefig(output_path, bbox_inches='tight')
-        else:
-            plt.show()
-        plt.close()
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                widths,
+                f'Cloud width in {dir_label}',
+                'time (s)',
+                'width (mm)',
+                figsize,
+                dpi,
+                output_path
+                )
 
     def plot_center(
             self,
@@ -428,21 +435,17 @@ class Simulation:
         times = np.linspace(self._t_0, self._t_end, N_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
         centers = [self.center(t)[direction] for t in times]
-        # Create figure and labels
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
-        ax.scatter(times, centers)
-        plt.title(f'Cloud centre position along {dir_label} direction', fontsize=24)
-        plt.xlabel('time (s)', fontsize=20)
-        plt.ylabel(f'{dir_label} ({dist_unit})', fontsize=20)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-        # Display or save
-        if output_path is not None:
-            fig.savefig(output_path, bbox_inches='tight')
-        else:
-            plt.show()
-        plt.close()
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                centers,
+                f'Cloud centre position along {dir_label} direction',
+                'time (s)',
+                f'{dir_label} ({dist_unit})',
+                figsize,
+                dpi,
+                output_path
+                )
 
     def plot_phase_diagram(
             self,
