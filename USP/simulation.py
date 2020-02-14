@@ -261,7 +261,7 @@ class Simulation:
             self._particles = p.starmap(_integ, args)
         self.run_time = time.time() - start_time
 
-        print(f'Complete, runtime: {self.run_time}')
+        print(f'Complete, runtime: {self.run_time:.3f}')
 
     # TODO Initialisation parameters should be passed to init, and this function
     # called automatically unless flagged not to
@@ -359,7 +359,7 @@ class Simulation:
             output_path
             ):
         """
-        Abstracted plotting data
+        Abstracted plotting of scatter graph
 
         Args:
         N_points: int, no. of points to plot
@@ -383,6 +383,41 @@ class Simulation:
             plt.show()
         plt.close()
 
+    def _plot_histogram(
+            self,
+            data,
+            bins,
+            title,
+            label_x,
+            label_y,
+            figsize,
+            dpi,
+            output_path
+            ):
+        """
+        Abstracted plotting of histogram
+
+        Args:
+        N_points: int, no. of points to plot
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax.hist(data, bins=bins)
+        plt.title(title, fontsize=24)
+        plt.xlabel(label_x, fontsize=20)
+        plt.ylabel(label_y, fontsize=20)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        # Display or save
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
+        plt.close()
 
     def plot_temperatures(
             self,
@@ -429,6 +464,32 @@ class Simulation:
                 f'Cloud width in {dir_label}',
                 'time (s)',
                 'width (mm)',
+                figsize,
+                dpi,
+                output_path
+                )
+
+    def plot_momentum_width(
+            self,
+            N_points=50,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            direction=0,
+            ):
+        """
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, N_points)
+        direction, dir_label  = utils.clean_direction_index(direction, True)
+        widths = [self.momentum_width(t)[direction] for t in times]
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                widths,
+                f'Momentum width in {dir_label}',
+                'time (s)',
+                'width (kgm/s)',
                 figsize,
                 dpi,
                 output_path
@@ -529,9 +590,62 @@ class Simulation:
         self._plot_2D_scatter(
                 times,
                 vols,
-                f'Cloud volume',
+                f'Cloud PS volume',
                 'time (s)',
-                f'Volume ((atomic mass * mm)^3)',
+                f'PS volume ((atomic mass * mm)^3)',
+                figsize,
+                dpi,
+                output_path
+                )
+
+    def plot_position_histogram(
+            self,
+            time,
+            bins=20,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            direction=0,
+            ):
+        """
+        """
+        # Get data
+        direction, dir_label = utils.clean_direction_index(direction, True)
+        data = 1000 * np.array(self.get_rs(time)).transpose()[direction]
+        # Plot
+        self._plot_histogram(
+                data,
+                bins,
+                f'Position distribution in {dir_label}',
+                f'{dir_label} (mm)',
+                'frequency',
+                figsize,
+                dpi,
+                output_path
+                )
+
+
+    def plot_momentum_histogram(
+            self,
+            time,
+            bins=20,
+            output_path = None,
+            figsize=(6,4),
+            dpi=300,
+            direction=0,
+            ):
+        """
+        """
+        # Get data
+        direction, dir_label = utils.clean_direction_index(direction, True)
+        data = np.array(self.get_ps(time)).transpose()[direction]
+        # Plot
+        self._plot_histogram(
+                data,
+                bins,
+                f'Momentum distribution in {dir_label}',
+                f'{dir_label} momentum (kgm/s)',
+                'frequency',
                 figsize,
                 dpi,
                 output_path
