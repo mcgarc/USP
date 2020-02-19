@@ -41,7 +41,7 @@ class Particle:
     """
     _index_count = count(0)
 
-    def __init__(self, r, v, m):
+    def __init__(self, r, v, m, t_0, t_end, dt, points):
         """
         Initialise a particle with starting position, velocity and mass
 
@@ -49,15 +49,24 @@ class Particle:
         r: list-like, initial position
         v: list-like, initial velocity
         m: float, mass
+        t0: float, starting time
+        t_end: float, end time
+        dt: float, step
+        points: int, the number of points at which to save Q from integrator
         """
         self.set_r(r)
         self._r_0 = self.r
         self.set_v(v)
         self._v_0 = self.v
         self.set_m(m)
-        self._integ = None
+        self._t_0 = t_0
+        self._t_end = t_end
+        self._dt = dt
+        self._points = points
+        self._result = None
         self._terminated = False
         self._index = next(self._index_count)
+        self._result_times = None
 
     @property
     def m(self):
@@ -71,23 +80,27 @@ class Particle:
     def index(self):
         return self._index
 
+    @property
+    def result_times(self):
+        """
+        np.linspace containing the times at which we sample particle Q values
+        """
+        return  np.linspace(self._t_0, self._t_end, self._points)
+
     def Q(self, t):
         """
-        Return Q = [r, v] at time t
+        Return Q = [r, v] at time index t
 
         Args:
-        t: float, time
+        t: integer, time index TODO
         """
-        if self._integ is None:
+        if self._result is None:
             if t != 0:
                 raise ValueError('No integrator, so cannot provide Q(t>0)')
             else:
                 return np.concatenate((self._r, self._v)) # Q(t=0)
         else:
-            # Use float(t) to ensure we are indexing time, not position in list
-            # (an int will get the nth entry)
-            # Use [1] as second index to extract the y part of the state
-            return self._integ[float(t)][1]
+            return self._result[t]
 
     def r(self, t):
         return self.Q(t)[:3]
@@ -147,7 +160,7 @@ class Particle:
             energy += self.potential_energy(t, potential)
         return energy
 
-    def integ(self, potential, t_0, t_end, dt):
+    def integ(self, potential):
         """
         Create and solve initial value problem for the particle. Takes the
         potential (which we expect to be a function of t and r) and a boundary
@@ -156,22 +169,20 @@ class Particle:
         Args:
         potential: method, with args (t, r). Passed to _dQ_dt. e.g. a
         `trap.potential`
-        t0: float, starting time
-        t_end: float, end time
-        dt: float, step
         """
         # Construct dQ_dt, which is to be stepped by the integrator
         integ = de.OdeSystem(
                 self._dQ_dt,
                 y0 = D.array(self.Q(0)),
                 dense_output = False,
-                t = (t_0, t_end),
-                dt = dt,
+                t = (self._t_0, self._t_end),
+                dt = self._dt,
                 constants = {'potential': potential}
                 )
         integ.set_method('SymplecticEulerSolver')
         integ.integrate()
-        self._integ = integ
+        self._result = [integ[float(t)][1] for t in self.result_times]
+
 
     def _dQ_dt(self, t, Q, potential):
         """

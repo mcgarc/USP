@@ -27,15 +27,17 @@ import time
 import csv
 from textwrap import dedent
 
+from sys import getsizeof
+
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 
 
-def _integ(particle, potential, t_0, t_end, dt, out_times):
+def _integ(particle, potential):
     """
     Call init_integ of a passed mol. For parallelisation
     """
-    particle.integ(potential, t_0, t_end, dt)
+    particle.integ(potential)
     return particle
 
 
@@ -48,6 +50,7 @@ class Simulation:
             t_0,
             t_end,
             dt,
+            sample_points,
             process_no = None
             ):
         """
@@ -56,6 +59,7 @@ class Simulation:
         self._t_0 = t_0
         self._t_end = t_end
         self._dt = dt
+        self._sample_points = sample_points
         self._process_no = process_no
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
@@ -211,6 +215,7 @@ class Simulation:
             self._particles = pickle.load(f)
 
 
+    @profile
     def run(self):
         """
         Run the simulation using multiprocessing. Creates particles
@@ -223,10 +228,6 @@ class Simulation:
         args = zip(
                 self._particles,
                 repeat(self._trap.potential),
-                repeat(self._t_0),
-                repeat(self._t_end),
-                repeat(self._dt),
-                repeat([0, self._t_end]) # FIXME Should be arbitrary
                 )
 
         # Check processes available
@@ -321,7 +322,11 @@ class Simulation:
                   np.random.normal(v_centre[1], v_sigma[1]),
                   np.random.normal(v_centre[2], v_sigma[2])
               ],
-              mass
+              mass,
+              self._t_0,
+              self._t_end,
+              self._dt,
+              self._sample_points
               )
             for i in range(int(particle_no))
             ]
@@ -339,8 +344,8 @@ class Simulation:
     def plot_start_end_positions(self):
         """
         """
-        start_rs = np.array(self.get_rs(self._t_0)).transpose()
-        end_rs = np.array(self.get_rs(self._t_end)).transpose()
+        start_rs = np.array(self.get_rs(0)).transpose()
+        end_rs = np.array(self.get_rs(-1)).transpose()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
@@ -421,7 +426,6 @@ class Simulation:
 
     def plot_temperatures(
             self,
-            N_points=50,
             output_path = None,
             figsize=(6,4),
             dpi=300,
@@ -429,8 +433,8 @@ class Simulation:
         """
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
-        temps = [1E6 * self.temperature(t) for t in times]
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
+        temps = [1E6 * self.temperature(t) for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -445,7 +449,6 @@ class Simulation:
 
     def plot_width(
             self,
-            N_points=50,
             output_path = None,
             figsize=(6,4),
             dpi=300,
@@ -454,9 +457,9 @@ class Simulation:
         """
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
         direction, dir_label  = utils.clean_direction_index(direction, True)
-        widths = [1E3 * self.width(t)[direction] for t in times]
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
+        widths = [1E3 * self.width(t)[direction] for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -471,7 +474,6 @@ class Simulation:
 
     def plot_momentum_width(
             self,
-            N_points=50,
             output_path = None,
             figsize=(6,4),
             dpi=300,
@@ -480,9 +482,9 @@ class Simulation:
         """
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label  = utils.clean_direction_index(direction, True)
-        widths = [self.momentum_width(t)[direction] for t in times]
+        widths = [self.momentum_width(t)[direction] for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -497,7 +499,6 @@ class Simulation:
 
     def plot_center(
             self,
-            N_points=50,
             direction=2,
             output_path = None,
             figsize=(6,4),
@@ -515,9 +516,9 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
-        centers = [self.center(t)[direction] for t in times]
+        centers = [self.center(t)[direction] for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -532,7 +533,6 @@ class Simulation:
 
     def plot_cloud_volume(
             self,
-            N_points=50,
             output_path = None,
             figsize=(6,4),
             dpi=300,
@@ -549,8 +549,8 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
-        vols = [ 1E9 * np.prod(self.width(t)) for t in times ]
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
+        vols = [ 1E9 * np.prod(self.width(t)) for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -565,7 +565,6 @@ class Simulation:
 
     def plot_cloud_phase_space_volume(
             self,
-            N_points=50,
             output_path = None,
             figsize=(6,4),
             dpi=300,
@@ -582,10 +581,10 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, N_points)
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         vols = [ 1E9 * np.prod(self.width(t)) * np.prod(self.momentum_width(t))
                 / consts.u**3
-            for t in times ]
+            for t in range(self._sample_points)]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -655,7 +654,6 @@ class Simulation:
             self,
             particle_index,
             dir_index,
-            N_points,
             output_path = None,
             time_gradient=False,
             colorbar=False,
@@ -669,7 +667,6 @@ class Simulation:
         Args:
         particle_index: int, the paticle whose PSD is to be shown
         dire_index: int, corresponds to the x, y or z direction
-        N_points: int, no. of points to plot
         output_path: str or None, if None then show graph, otherwise save it
         time_gradient: bool, if true then shade the points for time
         colorbar: bool, if time_gradient is true then colorbar will create a
@@ -679,9 +676,9 @@ class Simulation:
         plot_kwargs: kwargs to be passed to the scatter plot fn
         """
         # Get coordinates
-        times = np.linspace(self._t_0, self._t_end, N_points)
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         particle = self._particles[particle_index]
-        Q_projections = [particle.Q_projection(t, 0) for t in times]
+        Q_projections = [particle.Q_projection(t, 0) for t in range(self._sample_points)]
         Q_projections = np.array(Q_projections).transpose()
         # Setup time gradient if required
         if time_gradient:
