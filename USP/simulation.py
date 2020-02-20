@@ -30,6 +30,7 @@ from textwrap import dedent
 from sys import getsizeof
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 
 
@@ -707,7 +708,6 @@ class Simulation:
 
     def animate(
             self,
-            N_frames,
             output_path = None,
             write_fps = 30,
             write_bitrate = 1800,
@@ -720,7 +720,6 @@ class Simulation:
         Animate the motion of the particles in the trap.
 
         Args:
-        N_frames: int, number of frames to animate
         output_path: str or None, if str then provides path to save video file
         write_fps: int, fps at which to save video
         write_bitrate: int
@@ -728,8 +727,7 @@ class Simulation:
         *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
-        frame_times = np.linspace(self._t_0, self._t_end, N_frames)
-        data = [np.array(self.get_rs(t)).transpose() for t in frame_times]
+        data = [np.array(self.get_rs(t)).transpose() for t in range(self._sample_points)]
         data = np.array(data)
         # Initialise figure and start position
         fig = plt.figure()
@@ -750,7 +748,7 @@ class Simulation:
         ani = animation.FuncAnimation(
                 fig,
                 update,
-                N_frames,
+                self._sample_points,
                 fargs=(scatter),
                 interval=interval,
                 blit=False

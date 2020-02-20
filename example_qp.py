@@ -13,11 +13,18 @@ def main():
     path = f'results/{start_time_str}/'
     if not os.path.exists(path):
         os.mkdir(path)
-    
+
+    # Save script file with results
+    with open(__file__, 'r') as f:
+        copy_script_path = f'{path}runscipt.py'
+        with open(copy_script_path, 'w') as f_out:
+            for line in f:
+                f_out.write(line)
+            f_out.close()
+        f.close()
 
     # Initialise QP
     height = parameter.SigmoidParameter(0, 1, 4, 6, 2)
-    #height = parameter.ConstantParameter(0)
     qp = field.QuadrupoleFieldTranslate(consts.u_B * 0.6, height, direction=0)
     qp_trap = trap.FieldTrap(qp.field)
 
@@ -28,20 +35,18 @@ def main():
     v_spread = np.sqrt(2*consts.k_B*T/mass)
  
     # Simulation
-    POINTS = 30
-    t_end = 10
-    PARTICLES = 1E2
+    POINTS = 3000
+    t_end = 1
+    PARTICLES = 1E1
     sim = simulation.Simulation(qp_trap, 0, t_end, 5E-4, POINTS)
     sim.init_particles(PARTICLES, mass, r_spread, v_spread)
 
     sim.run()
 
-    print(sim.get_total_energy(0))
-    print(sim.get_total_energy(t_end))
-
-    #sim.save_to_pickle(f'{path}/sim.pickle')
-
-    #sim.plot_start_end_positions()
+    
+    E_0 = sim.get_total_energy(0)
+    E_end = sim.get_total_energy(t_end)
+    print(f'Energy differential: {(E_0 - E_end) / E_0:.5f} %')
     
     sim.plot_temperatures(output_path=f'{path}temps.png')
     sim.plot_center(direction=0, output_path=f'{path}center_x.png')
@@ -66,7 +71,8 @@ def main():
     sim.plot_momentum_histogram(t_end, direction=2, output_path=f'{path}p_t1_hist_z.png')
     yzlim = (-5E-3, 5E-3)
     xlim = (-1E-3, 1.121)
-    #sim.animate(2000, xlim=yzlim, ylim=yzlim, zlim=yzlim)#, output_path='results/qp_t_100.mp4')
+    sim.animate(xlim=yzlim, ylim=yzlim, zlim=yzlim)#, output_path='results/qp_t_100.mp4')
+
 
 if __name__ == '__main__':
     main()
