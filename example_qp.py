@@ -16,8 +16,8 @@ def main():
     
 
     # Initialise QP
-    height = parameter.SigmoidParameter(0, 1, 9, 11, 2)
-    height = parameter.ConstantParameter(0)
+    height = parameter.SigmoidParameter(0, 1, 4, 6, 2)
+    #height = parameter.ConstantParameter(0)
     qp = field.QuadrupoleFieldTranslate(consts.u_B * 0.6, height, direction=0)
     qp_trap = trap.FieldTrap(qp.field)
 
@@ -29,8 +29,8 @@ def main():
  
     # Simulation
     POINTS = 30
-    t_end = 1
-    PARTICLES = 1E1
+    t_end = 10
+    PARTICLES = 1E2
     sim = simulation.Simulation(qp_trap, 0, t_end, 5E-4, POINTS)
     sim.init_particles(PARTICLES, mass, r_spread, v_spread)
 
