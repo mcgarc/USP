@@ -15,9 +15,12 @@ import numpy as np
 from itertools import count
 import desolver as de
 import desolver.backend as D
+from . import utils
 
-### FIXME This is only the second hackiest bit of code I have ever written...
+# FIXME This is only the second hackiest bit of code I have ever written...
 # Fixes bug with desolver trying to cast lists/ arrays/ ndarrays as floats
+
+
 def float_conv(x):
     if type(x) is list:
         x = np.array(x)
@@ -26,18 +29,16 @@ def float_conv(x):
     else:
         return float(x)
 
-D.to_float = float_conv
-###
 
-from . import utils
+D.to_float = float_conv
 
 
 class Particle:
     """
-    Describes a particle with spatial position, velocity and mass. Particle also
-    has the attribute _integ, which is the integrator to describe its propagation
-    in time, and the attribute _terminated, which flags if the particle has
-    been destroyed or otherwise lost
+    Describes a particle with spatial position, velocity and mass. Particle
+    also has the attribute _integ, which is the integrator to describe its
+    propagation in time, and the attribute _terminated, which flags if the
+    particle has been destroyed or otherwise lost
     """
     _index_count = count(0)
 
@@ -46,10 +47,10 @@ class Particle:
             r,
             v,
             m,
-            t_0 = None,
-            t_end = None,
-            dt = None,
-            points = None
+            t_0=None,
+            t_end=None,
+            dt=None,
+            points=None
             ):
         """
         Initialise a particle with starting position, velocity and mass
@@ -61,8 +62,8 @@ class Particle:
         t0: float, starting time, or None (default)
         t_end: float, end time, or None (default)
         dt: float, step, or None (default)
-        points: int, the number of points at which to save Q from integrator, or
-        None (default)
+        points: int, the number of points at which to save Q from integrator,
+        or None (default)
         """
         self.set_r(r)
         self._r_0 = self.r
@@ -95,7 +96,7 @@ class Particle:
         """
         np.linspace containing the times at which we sample particle Q values
         """
-        return  np.linspace(self._t_0, self._t_end, self._points)
+        return np.linspace(self._t_0, self._t_end, self._points)
 
     def Q(self, t):
         """
@@ -108,7 +109,7 @@ class Particle:
             if t != 0:
                 raise ValueError('No integrator, so cannot provide Q(t>0)')
             else:
-                return np.concatenate((self._r, self._v)) # Q(t=0)
+                return np.concatenate((self._r, self._v))  # Q(t=0)
         else:
             return self._result[t]
 
@@ -128,7 +129,9 @@ class Particle:
         """
         i = int(dir_index)
         if i not in [0, 1, 2]:
-            raise ValueError('Direction index unrecognised (must be 0, 1 or 2)')
+            raise ValueError(
+                    'Direction index unrecognised (must be 0, 1 or 2)'
+                    )
         return np.array([self.r(t)[i], self.v(t)[i]])
 
     def set_r(self, r):
@@ -174,7 +177,7 @@ class Particle:
         """
         Create and solve initial value problem for the particle. Takes the
         potential (which we expect to be a function of t and r) and a boundary
-        time. 
+        time.
 
         Args:
         potential: method, with args (t, r). Passed to _dQ_dt. e.g. a
@@ -190,25 +193,25 @@ class Particle:
             raise RuntimeError('Particle time values undefined')
         # Check if sample points are defined
         if self._points is None:
-            raise NotImplemented('Cannot yet handle dense output') # FIXME
+            raise NotImplemented('Cannot yet handle dense output')  # FIXME
         # Construct dQ_dt, which is to be stepped by the integrator
         integ = de.OdeSystem(
                 self._dQ_dt,
-                y0 = D.array(self.Q(0)),
-                dense_output = False,
-                t = (self._t_0, self._t_end),
-                dt = self._dt,
-                constants = {'potential': potential}
+                y0=D.array(self.Q(0)),
+                dense_output=False,
+                t=(self._t_0, self._t_end),
+                dt=self._dt,
+                constants={'potential': potential}
                 )
         integ.set_method('SymplecticEulerSolver')
         integ.integrate()
         self._result = [integ[float(t)][1] for t in self.result_times]
 
-
     def _dQ_dt(self, t, Q, potential):
         """
-        Return the time derivative of Q, the 6-vector position in momentum space,
-        for a particle in given potential at time t. (Hamilton's equations)
+        Return the time derivative of Q, the 6-vector position in momentum
+        space, for a particle in given potential at time t. (Hamilton's
+        equations)
 
         Args:
         t: float, time of evaluation
@@ -233,6 +236,7 @@ class Particle:
     def check_termination(self):
         """
         TODO: Check if the particle must be terminated, for example due to
-        violating some boundary condition (like touching the surface of a chip!)
+        violating some boundary condition (like touching the surface of a
+        chip!)
         """
         pass
