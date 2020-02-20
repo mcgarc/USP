@@ -215,7 +215,6 @@ class Simulation:
             self._particles = pickle.load(f)
 
 
-    @profile
     def run(self):
         """
         Run the simulation using multiprocessing. Creates particles
