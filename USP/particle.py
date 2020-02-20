@@ -41,7 +41,16 @@ class Particle:
     """
     _index_count = count(0)
 
-    def __init__(self, r, v, m, t_0, t_end, dt, points):
+    def __init__(
+            self,
+            r,
+            v,
+            m,
+            t_0 = None,
+            t_end = None,
+            dt = None,
+            points = None
+            ):
         """
         Initialise a particle with starting position, velocity and mass
 
@@ -49,10 +58,11 @@ class Particle:
         r: list-like, initial position
         v: list-like, initial velocity
         m: float, mass
-        t0: float, starting time
-        t_end: float, end time
-        dt: float, step
-        points: int, the number of points at which to save Q from integrator
+        t0: float, starting time, or None (default)
+        t_end: float, end time, or None (default)
+        dt: float, step, or None (default)
+        points: int, the number of points at which to save Q from integrator, or
+        None (default)
         """
         self.set_r(r)
         self._r_0 = self.r
@@ -170,6 +180,17 @@ class Particle:
         potential: method, with args (t, r). Passed to _dQ_dt. e.g. a
         `trap.potential`
         """
+        # Ensure that time values are defined
+        conditions = [
+                self._t_0 is None,
+                self._t_end is None,
+                self._dt is None
+                ]
+        if True in conditions:
+            raise RuntimeError('Particle time values undefined')
+        # Check if sample points are defined
+        if self._points is None:
+            raise NotImplemented('Cannot yet handle dense output') # FIXME
         # Construct dQ_dt, which is to be stepped by the integrator
         integ = de.OdeSystem(
                 self._dQ_dt,
