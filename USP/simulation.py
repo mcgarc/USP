@@ -44,17 +44,30 @@ def _integ(particle, potential):
 
 class Simulation:
     """
+    Set up a simulation for particles in a specified trap over a given time
+    period.
     """
 
     def __init__(self,
-            trap,
-            t_0,
-            t_end,
-            dt,
-            sample_points,
-            process_no = None
-            ):
+                 trap,
+                 t_0,
+                 t_end,
+                 dt,
+                 sample_points,
+                 process_no=None
+                 ):
         """
+        Simulation constructor:
+
+        Args:
+        trap: USP.trap object, provides potential for the simulation
+        (trap.potential method)
+        t_0: float, start time
+        t_end: float, end time
+        dt: float, timestep,
+        sample_points: int, no. of points to sample in the simulation
+        process_no: int or None, number of parallel processes or if None
+        (default) uses maximum possible
         """
         self.set_trap(trap)
         self._t_0 = t_0
@@ -65,7 +78,6 @@ class Simulation:
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
         self.run_time = None
-        
 
     @property
     def particles(self):
@@ -80,7 +92,7 @@ class Simulation:
         """
         raise NotImplemented
 
-    def _check_particles(self, message = None):
+    def _check_particles(self, message=None):
         """
         Raise runtime error if user tries to access particles before
         initialisation
@@ -101,47 +113,68 @@ class Simulation:
         elif isinstance(trap, USP_trap.AbstractPotentialTrap):
             self._trap = trap
         else:
-            raise ValueError(
-            '''trap is not of valid type, expected None, AbstractTrap or
-            AbstractPotentialTrap'''
-            )
+            error = '''trap is not of valid type, expected None, AbstractTrap
+            or AbstractPotentialTrap'''
+            raise ValueError(error)
 
     def get_rs(self, t):
         """
         Return a list of all particles positions at the given time
+
+        Args:
+        t: int, index time of evaluation
         """
-        rs = [ p.r(t) for p in self._particles ]
+        rs = [p.r(t) for p in self._particles]
         return rs
 
     def get_vs(self, t):
         """
         Return a list of all particles velocities at the given time
+
+        Args:
+        t: int, index time of evaluation
         """
-        vs = [ p.v(t) for p in self._particles ]
+        vs = [p.v(t) for p in self._particles]
         return vs
 
     def get_ps(self, t):
         """
         Return a list of all particle momenta at the given time
+
+        Args:
+        t: int, index time of evaluation
         """
-        ps = [p.v(t) * p.m for p in self._particles ]
+        ps = [p.v(t) * p.m for p in self._particles]
         return ps
 
     def get_KEs(self, t):
         """
+        Return a list of the kinetic energy for each paticle at given time
+
+        Args:
+        t: int, index time of evaluation
         """
-        kinetics = [ p.kinetic_energy(t) for p in self._particles ]
+        kinetics = [p.kinetic_energy(t) for p in self._particles]
         return kinetics
 
     def temperature(self, t):
         """
+        Return the temperature of the cloud calculated from the KE at a given
+        time
+
+        Args:
+        t: int, index time of evaluation
         """
-        kinetics = self.get_KEs(t) 
+        kinetics = self.get_KEs(t)
         kinetics_std = np.std(kinetics)
         return kinetics_std / (3 * consts.k_B)
 
     def center(self, t):
         """
+        Return the cloud centre as a numpy array at given time
+
+        Args:
+        t: int, index time of evaluation
         """
         rs = np.array(self.get_rs(t))
         rs_T = rs.transpose()
@@ -152,6 +185,11 @@ class Simulation:
 
     def width(self, t):
         """
+        Return the width of the cloud in the cardinal directions as a numpy
+        array
+
+        Args:
+        t: int, index time of evaluation
         """
         rs = np.array(self.get_rs(t))
         rs_T = rs.transpose()
@@ -162,6 +200,11 @@ class Simulation:
 
     def momentum_width(self, t):
         """
+        Return the width in momentum space of the cloud in the cardinal
+        directions as a numpy array
+
+        Args:
+        t: int, index time of evaluation
         """
         ps = np.array(self.get_ps(t))
         ps_T = ps.transpose()
@@ -191,7 +234,7 @@ class Simulation:
         Save Q(t) for each particle as CSV
 
         Args:
-        t: float, time to get Q
+        t: int, time index at which to retrieve Q
         filename: str, file to save csv
         """
 
@@ -215,14 +258,15 @@ class Simulation:
         with open(filename, 'rb') as f:
             self._particles = pickle.load(f)
 
-
     def run(self):
         """
-        Run the simulation using multiprocessing. Creates particles
+        Run the simulation using multiprocessing.
         """
         # Check that a trap has been specified
         if self._trap is None:
-            raise RuntimeError('No trap has been specified for this simulation')
+            raise RuntimeError(
+                    'No trap has been specified for this simulation'
+                    )
 
         # Create args for _integ running in parallel
         args = zip(
@@ -253,8 +297,8 @@ class Simulation:
                 Time: {self._t_end - self._t_0}
                 dt: {self._dt}
                 '''
-                )
-        )
+                     )
+              )
 
         # Multiprocessing
         start_time = time.time()
@@ -264,17 +308,17 @@ class Simulation:
 
         print(f'Complete, runtime: {self.run_time:.3f}')
 
-    # TODO Initialisation parameters should be passed to init, and this function
-    # called automatically unless flagged not to
+    # TODO Initialisation parameters should be passed to init, and this
+    # function called automatically unless flagged not to
     def init_particles(
             self,
             particle_no,
             mass,
             r_sigma,
             v_sigma,
-            r_centre = [0, 0, 0],
-            v_centre = [0, 0, 0],
-            seed = None
+            r_centre=[0, 0, 0],
+            v_centre=[0, 0, 0],
+            seed=None
             ):
         """
         Create particles for simulation.
@@ -292,7 +336,7 @@ class Simulation:
         None, populates self._particles
         """
 
-        self._mass = mass # Save for use in temperature calculations see TODO
+        self._mass = mass  # Save for use in temperature calculations see TODO
 
         if seed is not None:
             np.seed(seed)
@@ -336,13 +380,17 @@ class Simulation:
 
     def get_total_energy(self, t):
         """
-        Get the total energy (KE + potential) at a specified time 
+        Get the total energy (KE + potential) at a specified time
+
+        Args:
+        t: int, time index at which to retrieve Q
         """
         energies = [p.energy(t, self._trap.potential) for p in self._particles]
         return np.sum(np.array(energies))
 
     def plot_start_end_positions(self):
         """
+        3D plot of inital and final positions in the simulation
         """
         start_rs = np.array(self.get_rs(0)).transpose()
         end_rs = np.array(self.get_rs(-1)).transpose()
@@ -361,20 +409,23 @@ class Simulation:
             label_y,
             figsize,
             dpi,
-            output_path
+            output_path=None
             ):
         """
         Abstracted plotting of scatter graph
 
         Args:
-        N_points: int, no. of points to plot
-        direction: direction index along which to plot centre
-        output_path: str or None, if None then show graph, otherwise save it
+        data_x: list or np.array, the list of x-values to display
+        data_y: list or np.array, the list of y-values to display
+        title: str, the title of the plot
+        label_x: str, the x-axis label
+        label_y: str, the y-axis label
         figsize: pair of ints, size of output plot
         dpi:int, dpi of output plot
+        output_path: str or None, if None then show graph, otherwise save it
         """
         fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         ax.scatter(data_x, data_y)
         plt.title(title, fontsize=24)
         plt.xlabel(label_x, fontsize=20)
@@ -403,14 +454,17 @@ class Simulation:
         Abstracted plotting of histogram
 
         Args:
-        N_points: int, no. of points to plot
-        direction: direction index along which to plot centre
-        output_path: str or None, if None then show graph, otherwise save it
+        data: list or np.array, the data to plot in the histogram
+        bins: int, the number of bins in the histogram
+        title: str, the title of the plot
+        label_x: str, the x-axis label
+        label_y: str, the y-axis label
         figsize: pair of ints, size of output plot
         dpi:int, dpi of output plot
+        output_path: str or None, if None then show graph, otherwise save it
         """
         fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         ax.hist(data, bins=bins)
         plt.title(title, fontsize=24)
         plt.xlabel(label_x, fontsize=20)
@@ -426,11 +480,17 @@ class Simulation:
 
     def plot_temperatures(
             self,
-            output_path = None,
-            figsize=(6,4),
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
             ):
         """
+        Plot the temperature at the sample points
+
+        Args:
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         """
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
@@ -449,17 +509,28 @@ class Simulation:
 
     def plot_width(
             self,
-            output_path = None,
-            figsize=(6,4),
+            direction,
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            direction=0,
             ):
         """
+        Plot the cloud width for given direction for each sample point
+
+        Args:
+        direction: int or str, indication of direction (x, y or z) to take
+        width
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         """
         # Get data
-        direction, dir_label  = utils.clean_direction_index(direction, True)
+        direction, dir_label = utils.clean_direction_index(direction, True)
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        widths = [1E3 * self.width(t)[direction] for t in range(self._sample_points)]
+        widths = [1E3 * self.width(t)[direction]
+                  for t
+                  in range(self._sample_points)
+                  ]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -474,17 +545,27 @@ class Simulation:
 
     def plot_momentum_width(
             self,
-            output_path = None,
-            figsize=(6,4),
+            direction,
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            direction=0,
             ):
         """
+        Plot the cloud momentum width for given direction for each sample point
+
+        Args:
+        direction: direction index along which to plot centre
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         """
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        direction, dir_label  = utils.clean_direction_index(direction, True)
-        widths = [self.momentum_width(t)[direction] for t in range(self._sample_points)]
+        direction, dir_label = utils.clean_direction_index(direction, True)
+        widths = [self.momentum_width(t)[direction]
+                  for t
+                  in range(self._sample_points)
+                  ]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -499,17 +580,17 @@ class Simulation:
 
     def plot_center(
             self,
-            direction=2,
-            output_path = None,
-            figsize=(6,4),
+            direction,
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            dist_unit = 'm'
+            dist_unit='m'
             ):
         """
-        Plot the mean position of the cloud a s a function of time
+        Plot the mean position of the cloud at each sample point at some given
+        direction
 
         Args:
-        N_points: int, no. of points to plot
         direction: direction index along which to plot centre
         output_path: str or None, if None then show graph, otherwise save it
         figsize: pair of ints, size of output plot
@@ -518,7 +599,10 @@ class Simulation:
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
-        centers = [self.center(t)[direction] for t in range(self._sample_points)]
+        centers = [self.center(t)[direction]
+                   for t
+                   in range(self._sample_points)
+                   ]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -533,10 +617,10 @@ class Simulation:
 
     def plot_cloud_volume(
             self,
-            output_path = None,
-            figsize=(6,4),
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            dist_unit = 'm'
+            dist_unit='m'
             ):
         """
         Plot the volume of the cloud as a function of time
@@ -550,7 +634,10 @@ class Simulation:
         """
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        vols = [ 1E9 * np.prod(self.width(t)) for t in range(self._sample_points)]
+        vols = [1E9 * np.prod(self.width(t))
+                for t
+                in range(self._sample_points)
+                ]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -565,26 +652,27 @@ class Simulation:
 
     def plot_cloud_phase_space_volume(
             self,
-            output_path = None,
-            figsize=(6,4),
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            dist_unit = 'm'
+            dist_unit='m'
             ):
         """
         Plot the phase space volume of the cloud
 
         Args:
-        N_points: int, no. of points to plot
-        direction: direction index along which to plot centre
         output_path: str or None, if None then show graph, otherwise save it
         figsize: pair of ints, size of output plot
         dpi:int, dpi of output plot
+        dist_unit: str, representation of distance unit for labelling
         """
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        vols = [ 1E9 * np.prod(self.width(t)) * np.prod(self.momentum_width(t))
+        vols = [1E9 * np.prod(self.width(t)) * np.prod(self.momentum_width(t))
                 / consts.u**3
-            for t in range(self._sample_points)]
+                for t
+                in range(self._sample_points)
+                ]
         # Plot
         self._plot_2D_scatter(
                 times,
@@ -600,13 +688,23 @@ class Simulation:
     def plot_position_histogram(
             self,
             time,
+            direction,
             bins=20,
-            output_path = None,
-            figsize=(6,4),
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            direction=0,
             ):
         """
+        Plot a histogram of particle positions at given time, projected into
+        one cardinal direction 
+
+        Args:
+        time: int, the time index at which to plot
+        direction: direction index along which to plot centre
+        bins: int, the number of bins in the histogram
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         """
         # Get data
         direction, dir_label = utils.clean_direction_index(direction, True)
@@ -623,17 +721,26 @@ class Simulation:
                 output_path
                 )
 
-
     def plot_momentum_histogram(
             self,
             time,
+            direction,
             bins=20,
-            output_path = None,
-            figsize=(6,4),
+            output_path=None,
+            figsize=(6, 4),
             dpi=300,
-            direction=0,
             ):
         """
+        Plot a histogram of particle momenta at given time, projected into
+        one cardinal direction 
+
+        Args:
+        time: int, the time index at which to plot
+        direction: direction index along which to plot centre
+        bins: int, the number of bins in the histogram
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
         """
         # Get data
         direction, dir_label = utils.clean_direction_index(direction, True)
@@ -654,10 +761,10 @@ class Simulation:
             self,
             particle_index,
             dir_index,
-            output_path = None,
+            output_path=None,
             time_gradient=False,
             colorbar=False,
-            figsize=(6,4),
+            figsize=(6, 4),
             dpi=300,
             **plot_kwargs
             ):
@@ -678,24 +785,33 @@ class Simulation:
         # Get coordinates
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
         particle = self._particles[particle_index]
-        Q_projections = [particle.Q_projection(t, 0) for t in range(self._sample_points)]
+        Q_projections = [particle.Q_projection(t, 0)
+                         for t
+                         in range(self._sample_points)
+                         ]
         Q_projections = np.array(Q_projections).transpose()
         # Setup time gradient if required
         if time_gradient:
             plot_kwargs['c'] = times
         # Create plot
         fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.05,0.05,0.8,0.8])
+        ax = fig.add_axes([0.05, 0.05, 0.8, 0.8])
         cm = plt.get_cmap('winter')
-        sc = ax.scatter(Q_projections[0], Q_projections[1], cmap=cm, **plot_kwargs)
+        sc = ax.scatter(Q_projections[0],
+                        Q_projections[1],
+                        cmap=cm,
+                        **plot_kwargs
+                        )
         # Colorbar
         if time_gradient and colorbar:
             cbar = plt.colorbar(sc)
             cbar.ax.tick_params(labelsize=14)
             cbar.set_label('time', fontsize=20)
         # Label axes
-        dir_label = {0:'x', 1:'y', 2:'z'}[dir_index]
-        plt.title(f'Phase space projection in {dir_label} direction', fontsize=24)
+        dir_label = {0: 'x', 1: ' y', 2: 'z'}[dir_index]
+        plt.title(f'Phase space projection in {dir_label} direction',
+                  fontsize=24
+                  )
         plt.xlabel(f'{dir_label}', fontsize=20)
         plt.ylabel(f'v_{dir_label}', fontsize=20)
         plt.xticks(fontsize=14)
@@ -708,13 +824,13 @@ class Simulation:
 
     def animate(
             self,
-            output_path = None,
-            write_fps = 30,
-            write_bitrate = 1800,
-            interval = 50,
-            xlim = None,
-            ylim = None,
-            zlim = None
+            output_path=None,
+            write_fps=30,
+            write_bitrate=1800,
+            interval=50,
+            xlim=None,
+            ylim=None,
+            zlim=None
             ):
         """
         Animate the motion of the particles in the trap.
@@ -727,20 +843,24 @@ class Simulation:
         *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
-        data = [np.array(self.get_rs(t)).transpose() for t in range(self._sample_points)]
+        data = [np.array(self.get_rs(t)).transpose()
+                for t
+                in range(self._sample_points)
+                ]
         data = np.array(data)
         # Initialise figure and start position
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         # Set axes
-        if xlim != None:
+        if xlim is not None:
             ax.set(xlim=xlim)
-        if ylim != None:
+        if ylim is not None:
             ax.set(ylim=ylim)
-        if zlim != None:
+        if zlim is not None:
             ax.set(zlim=zlim)
         scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
         # Function to update animation
+
         def update(frame, scatter):
             scatter._offsets3d = data[frame, :, :]
             return scatter
