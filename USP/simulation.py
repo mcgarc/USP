@@ -96,6 +96,39 @@ class Simulation:
         """
         raise NotImplemented
 
+    def live_particles(self, t_index):
+        """
+        Return the list of all particles that have not been terminated at the
+        given time
+
+        Args:
+        t_index: int, time index of evaluating particle termination
+        """
+        t = self._index_to_time(t_index)
+        return [p for p in self.particles if p.terminated > t]
+
+    def terminated_particles(self, t, index=True):
+        """
+        Return the list of all particles that have been terminated at the given
+        time
+
+        Args:
+        t_index: int, time index of evaluating particle termination
+        """
+        t = self._index_to_time(t_index)
+        return [p for p in self.particles if p.terminated < t]
+
+    def _index_to_time(self, time_index):
+        """
+        Convert a time index (int) into an absolute time (float) based on the
+        number of samples
+
+        Args:
+        time_index: int, the time index to be converted
+        """
+        Dt = (self._t_end - self._t_0) / self._sample_points
+        return time_index * Dt
+
     def _check_particles(self, message=None):
         """
         Raise runtime error if user tries to access particles before
@@ -121,14 +154,19 @@ class Simulation:
             or AbstractPotentialTrap'''
             raise ValueError(error)
 
-    def get_rs(self, t):
+    def get_rs(self, t, live=False):
         """
         Return a list of all particles positions at the given time
 
         Args:
         t: int, index time of evaluation
+        live: bool, if true then return only the positions of live particles
         """
-        rs = [p.r(t) for p in self._particles]
+        if live:
+            particles = self.live_particles(t, index=True)
+        else:
+            particles = self.particles
+        rs = [p.r(t) for p in particles]
         return rs
 
     def get_vs(self, t):
@@ -864,8 +902,8 @@ class Simulation:
         if zlim is not None:
             ax.set(zlim=zlim)
         scatter = [ax.scatter(data[0, 0, :], data[0, 1, :], data[0, 2, :])]
+        
         # Function to update animation
-
         def update(frame, scatter):
             scatter._offsets3d = data[frame, :, :]
             return scatter

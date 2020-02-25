@@ -74,7 +74,7 @@ class Particle:
         self._dt = dt
         self._points = points
         self._result = None
-        self._terminated = False
+        self._terminated = np.inf
         self._index = next(self._index_count)
         self._result_times = None
 
@@ -142,8 +142,14 @@ class Particle:
     def set_m(self, m):
         self._m = m
 
-    def terminate(self):
-        self._terminated = True
+    def _terminate(self, t):
+        """
+        Set the termination attribute to time of termination
+
+        Args:
+        t: float, the time of the termination
+        """
+        self._terminated = float(t)
 
     def kinetic_energy(self, t):
         return 0.5 * self.m * np.dot(self.v(t), self.v(t))
@@ -181,6 +187,8 @@ class Particle:
         Args:
         potential: method, with args (t, r). Passed to _dQ_dt. e.g. a
         `trap.potential`
+        events: (list of) callable: event method(s) to be passed to Desolver
+        integrator
         """
         # Ensure that time values are defined
         conditions = [
@@ -204,6 +212,11 @@ class Particle:
                 )
         integ.set_method('SymplecticEulerSolver')
         integ.integrate(events=events)
+        # Look for early completion by comparing last element of evaluation
+        # times to desired end time
+        integ_end_time = integ.t[-1]
+        if integ_end_time != self._t_end:
+            self._terminate(integ_end_time)
         self._result = [integ[float(t)][1] for t in self.result_times]
 
     def _dQ_dt(self, t, Q, potential):
