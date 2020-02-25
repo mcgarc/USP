@@ -211,6 +211,15 @@ class Simulation:
         kinetics_std = np.std(kinetics)
         return kinetics_std / (3 * consts.k_B)
 
+    def particle_number(self, t):
+        """
+        Return the number of live particles in the simulation at time
+
+        Args:
+        t: int, index time of evaluation
+        """
+        return len(self.live_particles(t))
+
     def center(self, t):
         """
         Return the cloud centre as a numpy array at given time
@@ -520,6 +529,35 @@ class Simulation:
         else:
             plt.show()
         plt.close()
+
+    def plot_particle_number(
+            self,
+            output_path=None,
+            figsize=(6, 4),
+            dpi=300
+            ):
+        """
+        Plot the particle number at the sample points
+
+        Args:
+        output_path: str or None, if None then show graph, otherwise save it
+        figsize: pair of ints, size of output plot
+        dpi:int, dpi of output plot
+        """
+        # Get data
+        times = np.linspace(self._t_0, self._t_end, self._sample_points)
+        nos = [self.particle_number(t) for t in range(self._sample_points)]
+        # Plot
+        self._plot_2D_scatter(
+                times,
+                nos,
+                f'Particle number',
+                'time (s)',
+                'Particle number',
+                figsize,
+                dpi,
+                output_path
+                )
 
     def plot_temperatures(
             self,
