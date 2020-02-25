@@ -72,7 +72,7 @@ class OutOfRangeBox(AbstractEvent):
         """
         super().__init__(terminal)
         self._limit = limit
-        self._center = np.array(center)
+        self._center = np.array(center).astype(float)
 
     def __call__(self, t, state, **kwargs):
         """
