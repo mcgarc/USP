@@ -34,11 +34,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 
 
-def _integ(particle, potential):
+def _integ(particle, potential, events):
     """
     Call init_integ of a passed mol. For parallelisation
     """
-    particle.integ(potential)
+    particle.integ(potential, events=events)
     return particle
 
 
@@ -54,6 +54,7 @@ class Simulation:
                  t_end,
                  dt,
                  sample_points,
+                 events = None,
                  process_no=None
                  ):
         """
@@ -66,6 +67,8 @@ class Simulation:
         t_end: float, end time
         dt: float, timestep,
         sample_points: int, no. of points to sample in the simulation
+        events: (list of) callable: events to be passed to integrator (default
+        None)
         process_no: int or None, number of parallel processes or if None
         (default) uses maximum possible
         """
@@ -74,6 +77,7 @@ class Simulation:
         self._t_end = t_end
         self._dt = dt
         self._sample_points = sample_points
+        self._events = events
         self._process_no = process_no
         self._eval_times = np.arange(t_0, t_end, dt)
         self._particles = None
@@ -272,6 +276,7 @@ class Simulation:
         args = zip(
                 self._particles,
                 repeat(self._trap.potential),
+                repeat(self._events)
                 )
 
         # Check processes available

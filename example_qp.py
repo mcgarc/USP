@@ -33,12 +33,22 @@ def main():
     mass = consts.m_Rb
     r_spread = 0.8E-3
     v_spread = np.sqrt(2*consts.k_B*T/mass)
+
+    # Particle loss
+    loss_event = events.OutOfRangeBox(2*r_spread)
  
     # Simulation
-    POINTS = 3000
+    POINTS = 500
     t_end = 1
     PARTICLES = 1E1
-    sim = simulation.Simulation(qp_trap, 0, t_end, 5E-4, POINTS)
+    sim = simulation.Simulation(
+            qp_trap,
+            0,
+            t_end,
+            5E-4,
+            POINTS,
+            events=loss_event
+            )
     sim.init_particles(PARTICLES, mass, r_spread, v_spread)
 
     sim.run()

@@ -32,7 +32,6 @@ def float_conv(x):
 
 D.to_float = float_conv
 
-
 class Particle:
     """
     Describes a particle with spatial position, velocity and mass. Particle
@@ -173,7 +172,7 @@ class Particle:
             energy += self.potential_energy(t, potential)
         return energy
 
-    def integ(self, potential):
+    def integ(self, potential, events=None):
         """
         Create and solve initial value problem for the particle. Takes the
         potential (which we expect to be a function of t and r) and a boundary
@@ -204,7 +203,7 @@ class Particle:
                 constants={'potential': potential}
                 )
         integ.set_method('SymplecticEulerSolver')
-        integ.integrate()
+        integ.integrate(events=events)
         self._result = [integ[float(t)][1] for t in self.result_times]
 
     def _dQ_dt(self, t, Q, potential):
