@@ -14,6 +14,8 @@ OutOfRangeBox: Event describing loss by a limit along each cardinal direction
 
 import numpy as np
 
+from . import utils
+
 
 class AbstractEvent:
     """
@@ -86,6 +88,77 @@ class OutOfRangeBox(AbstractEvent):
         r = state[:3]
         v = state[3:]
         if any(abs(r - self._center) > self._limit):
+            return 0
+        else:
+            return 1
+
+class OutOfRangeSphere(OutOfRangeBox):
+    """
+    Event determining if a particle has exceeded a given limit from the centre.
+    i.e. If it has left the sphere sourrounding the centre with radius limit
+    """
+
+    def __call__(self, t, state, **kwargs):
+        """
+        Calling an event returns 0 if the particle has left the sphere
+
+        Args:
+        t: time
+        state: Desolver state (anticipate 6-array of position and speed)
+        unknown kwags
+        """
+        r = np.array(state[:3])
+        if np.linalg.norm(r - self._center) > self._limit:
+            return 0
+        else:
+            return 1
+
+class OutOfRangeSphereTranslate(OutOfRangeBox):
+    """
+    Event determining if a particle has exceeded a given limit from the centre.
+    The centre of the sphere translates through time according to a given
+    paramter
+    """
+
+    def __init__(
+            self,
+            limit,
+            param,
+            direction=0,
+            center=[0, 0, 0],
+            terminal=True
+            ):
+        """
+        Constructor for OutOfRangeSphereTranslate
+
+        Args:
+        limit: float, distance a particle can travel in any cardinal direction
+        before terminating
+        param: USP.parameter object, determines position along `direction` axis
+        direction: str or int, represents the (cardinal) direction of
+        translation
+        center: the position from which to evaluate this distance
+        terminal: bool, whether triggering the event should terminate the
+        integration (default True)
+        """
+        super().__init__(limit, center, terminal)
+        self._direction = utils.clean_direction_index(direction)
+        self._param = param
+
+    def __call__(self, t, state, **kwargs):
+        """
+        Calling an event returns 0 if the particle has left the sphere
+
+        Args:
+        t: time
+        state: Desolver state (anticipate 6-array of position and speed)
+        unknown kwags
+        """
+        r_0 = self._center.copy()
+        r_0[self._direction] = self._param.value(t)
+        r = np.array(state[:3])
+            #print(r, r_0, r-r_0, self._param.value(t))
+        if np.linalg.norm(r - r_0) > self._limit:
             return 0
         else:
             return 1
