@@ -23,29 +23,31 @@ def main():
             f_out.close()
         f.close()
 
-    # Initialise QP
-    height = parameter.SigmoidParameter(0, 1, 4, 6, 2)
-    qp = field.QuadrupoleFieldTranslate(consts.u_B * 0.6, height, direction=0)
+    # Initialise QP (translate with the stage)
+    stage = parameter.SigmoidParameter(0, 1, 3, 5.5, 2)
+    qp = field.QuadrupoleFieldTranslate(consts.u_B * 0.6, stage, direction=0)
     qp_trap = trap.FieldTrap(qp.field)
 
     # Initial conditions
     T = 50E-6
     mass = consts.m_Rb
-    r_spread = 0.8E-3
+    z_fact = 0.5
+    r_spread_s =2.4E-3 / (2 + z_fact)
+    r_spread = [r_spread_s, r_spread_s, r_spread_s*z_fact]
     v_spread = np.sqrt(2*consts.k_B*T/mass)
 
-    # Particle loss
-    loss_event = events.OutOfRangeBox(2*r_spread)
+    # Particle loss (translate with the stage)
+    loss_event = events.OutOfRangeSphereTranslate(100E-3, stage)
  
     # Simulation
     POINTS = 500
-    t_end = 1
-    PARTICLES = 1E1
+    t_end = 6.5
+    PARTICLES = 50
     sim = simulation.Simulation(
             qp_trap,
             0,
             t_end,
-            5E-4,
+            1E-3,
             POINTS,
             events=loss_event
             )
@@ -53,18 +55,21 @@ def main():
 
     sim.run()
 
-    
     E_0 = sim.get_total_energy(0)
-    E_end = sim.get_total_energy(t_end)
+    E_end = sim.get_total_energy(-1)
     print(f'Energy differential: {(E_0 - E_end) / E_0:.5f} %')
     
     sim.plot_temperatures(output_path=f'{path}temps.png')
+    sim.plot_particle_number(output_path=f'{path}particle_no.png')
     sim.plot_center(0, output_path=f'{path}center_x.png')
     sim.plot_center(1, output_path=f'{path}center_y.png')
     sim.plot_center(2, output_path=f'{path}center_z.png')
     sim.plot_width(0, output_path=f'{path}width_x.png')
     sim.plot_width(1, output_path=f'{path}width_y.png')
     sim.plot_width(2, output_path=f'{path}width_z.png')
+    sim.plot_velocity_width(0, output_path=f'{path}velocity_width_x.png')
+    sim.plot_velocity_width(1, output_path=f'{path}velocity_width_y.png')
+    sim.plot_velocity_width(2, output_path=f'{path}velocity_width_z.png')
     sim.plot_cloud_volume(output_path=f'{path}volume.png')
     sim.plot_cloud_phase_space_volume(output_path=f'{path}ps_volum.png')
     sim.plot_position_histogram(0, 0, output_path=f'{path}r_t0_hist_x.png')
@@ -79,9 +84,9 @@ def main():
     sim.plot_momentum_histogram(-1, 0, output_path=f'{path}p_t1_hist_x.png')
     sim.plot_momentum_histogram(-1, 1, output_path=f'{path}p_t1_hist_y.png')
     sim.plot_momentum_histogram(-1, 2, output_path=f'{path}p_t1_hist_z.png')
-    yzlim = (-5E-3, 5E-3)
     xlim = (-1E-3, 1.121)
-    sim.animate(xlim=yzlim, ylim=yzlim, zlim=yzlim)#, output_path='results/qp_t_100.mp4')
+    yzlim = (-5E-3, 5E-3)
+    sim.animate(xlim=yzlim, ylim=yzlim, zlim=yzlim, output_path=f'{path}anim.mp4')
 
 
 if __name__ == '__main__':

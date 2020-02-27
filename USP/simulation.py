@@ -207,9 +207,9 @@ class Simulation:
         Args:
         t: int, index time of evaluation
         """
-        kinetics = self.get_KEs(t)
-        kinetics_std = np.std(kinetics)
-        return kinetics_std / (3 * consts.k_B)
+        kinetics = [p.kinetic_energy(t) for p in self.particles]
+        mean_kinetic = np.mean(np.array(kinetics))
+        return 2 * mean_kinetic / (3 * consts.k_B)
 
     def particle_number(self, t):
         """
@@ -248,6 +248,21 @@ class Simulation:
         y_std = np.std(rs_T[1])
         z_std = np.std(rs_T[2])
         return np.array([x_std, y_std, z_std])
+
+    def velocity_width(self, t):
+        """
+        Return the width in velocity space of the cloud in the cardinal
+        directions as a numpy array
+
+        Args:
+        t: int, index time of evaluation
+        """
+        vs = np.array(self.get_vs(t))
+        vs_T = vs.transpose()
+        v_x_std = np.std(vs_T[0])
+        v_y_std = np.std(vs_T[1])
+        v_z_std = np.std(vs_T[2])
+        return np.array([v_x_std, v_y_std, v_z_std])
 
     def momentum_width(self, t):
         """
@@ -624,7 +639,7 @@ class Simulation:
                 output_path
                 )
 
-    def plot_momentum_width(
+    def plot_velocity_width(
             self,
             direction,
             output_path=None,
@@ -643,7 +658,7 @@ class Simulation:
         # Get data
         times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
-        widths = [self.momentum_width(t)[direction]
+        widths = [self.velocity_width(t)[direction]
                   for t
                   in range(self._sample_points)
                   ]
@@ -651,9 +666,9 @@ class Simulation:
         self._plot_2D_scatter(
                 times,
                 widths,
-                f'Momentum width in {dir_label}',
+                f'Velocity width in {dir_label}',
                 'time (s)',
-                'width (kgm/s)',
+                'width (m/s)',
                 figsize,
                 dpi,
                 output_path

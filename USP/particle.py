@@ -118,6 +118,9 @@ class Particle:
     def v(self, t):
         return self.Q(t)[3:]
 
+    def speed(self, t):
+        return np.linalg.norm(self.v(t))
+
     def Q_projection(self, t, dir_index):
         """
         Return  the vector [r_i, v_i] at time t
