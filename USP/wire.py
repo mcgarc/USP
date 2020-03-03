@@ -142,7 +142,7 @@ class WireCluster:
         Get cluster field by summing each segment's contribution
         """
         field = [ wire.field(t, r) for wire in self._wires ]
-        return sum(field)
+        return np.array(sum(field))
 
 
 class ZWire(WireCluster):
