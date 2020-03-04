@@ -24,35 +24,36 @@ def main():
         f.close()
 
     # Initialise z wire
-    I = parameter.ConstantParameter(consts.u_B * 1)
-    z_0 = 1E-3
+    # Treutlein pg. 60 for current achievable
+    I = 3
+    I = parameter.ConstantParameter(consts.u_B * I)
+    z_0 = 1E-4
     h = parameter.ConstantParameter(z_0)
-    z_wire = wire.ZWire(I, z_0)
-    z_trap = trap.ClusterTrap(z_wire, h)
+    z_wire = wire.ZWire(I, 2*z_0)
+    z_trap = trap.ClusterTrap(z_wire, h, bias_scale=[1, 1, 0])
 
     # Initial conditions
     T = 50E-6
     mass = consts.m_Rb
-    z_fact = 1
-    r_spread_s = (z_0/10) / (2 + z_fact)
-    r_spread = [r_spread_s, r_spread_s, r_spread_s*z_fact]
+    r_spread = 10E-6
     v_spread = np.sqrt(2*consts.k_B*T/mass)
 
     # Particle loss (translate with the stage)
-    loss_rad = 10 * z_0
-    loss_rad = 0.8
-    loss_event = events.OutOfRangeSphere(loss_rad)
+    limit = 1E-1
+    limit = [10*limit, limit, limit]
+    loss_event = events.OutOfRangeBox(limit, center=[0, 0, z_0])
  
     # Simulation
     POINTS = 300
-    t_end = 3
-    PARTICLES = 10
+    t_end = .1
+    dt = 1E-5
+    PARTICLES = 8
     r_centre = [0., 0., z_0]
     sim = simulation.Simulation(
             z_trap,
             0,
             t_end,
-            1E-3,
+            dt,
             POINTS,
             events=loss_event
             )
@@ -90,9 +91,12 @@ def main():
     sim.plot_momentum_histogram(-1, 1, output_path=f'{path}p_t1_hist_y.png')
     sim.plot_momentum_histogram(-1, 2, output_path=f'{path}p_t1_hist_z.png')
     xlim = (-1E-1, 1E-1)
-    ylim = (-10E-3, 10E-3)
+    ylim = (-1E-2, 1E-2)
     zlim = (ylim[0], ylim[1] + z_0)
     sim.animate(xlim=xlim, ylim=ylim, zlim=zlim, output_path=f'{path}anim.mp4')
+    ylim = (-1E-3, 1E-3)
+    zlim = (ylim[0], ylim[1] + z_0)
+    sim.animate(xlim=ylim, ylim=ylim, zlim=zlim, output_path=f'{path}anim_close.mp4')
 
 
 if __name__ == '__main__':
