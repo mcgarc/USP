@@ -73,7 +73,11 @@ class OutOfRangeBox(AbstractEvent):
         integration (default True)
         """
         super().__init__(terminal)
-        self._limit = limit
+        if type(limit) in [int, float]:
+            self._limit = [limit, limit, limit]
+        else:
+            # TODO Proper type checking here
+            self._limit = limit
         self._center = np.array(center).astype(float)
 
     def __call__(self, t, state, **kwargs):
@@ -87,10 +91,10 @@ class OutOfRangeBox(AbstractEvent):
         """
         r = state[:3]
         v = state[3:]
-        if any(abs(r - self._center) > self._limit):
-            return 0
-        else:
-            return 1
+        for i in range(3):
+            if abs(r[i] - self._center[i]) > self._limit[i]:
+                return 0
+        return 1
 
 class OutOfRangeSphere(OutOfRangeBox):
     """
