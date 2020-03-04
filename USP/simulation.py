@@ -154,7 +154,7 @@ class Simulation:
             or AbstractPotentialTrap'''
             raise ValueError(error)
 
-    def get_rs(self, t, live=False):
+    def get_rs(self, t, live=True):
         """
         Return a list of all particles positions at the given time
 
@@ -163,7 +163,7 @@ class Simulation:
         live: bool, if true then return only the positions of live particles
         """
         if live:
-            particles = self.live_particles(t, index=True)
+            particles = self.live_particles(t)
         else:
             particles = self.particles
         rs = [p.r(t) for p in particles]
@@ -939,7 +939,7 @@ class Simulation:
         *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
-        data = [np.array(self.get_rs(t)).transpose()
+        data = [np.array(self.get_rs(t, live=False)).transpose()
                 for t
                 in range(self._sample_points)
                 ]
