@@ -189,10 +189,9 @@ class ClusterTrap(AbstractTrap):
     paramater.AbstractParameterProfile subclass.
 
     TODO: Allow specification of other coordinates
-    TODO: Allow bias to come from specified directions (e.g. y only)
     """
 
-    def __init__(self, cluster, height):
+    def __init__(self, cluster, height, bias_scale=[0, 0, 0]):
         """
         """
         if not isinstance(cluster, WireCluster):
@@ -205,6 +204,7 @@ class ClusterTrap(AbstractTrap):
                 )
         self._cluster = cluster
         self._height = height
+        self._bias_scale = np.array(bias_scale)
 
     @property
     def cluster(self):
@@ -219,7 +219,7 @@ class ClusterTrap(AbstractTrap):
         """
         r = [0, 0, self.height(t)]
         bias_field = -1 * self.cluster.field(t, r)
-        return bias_field
+        return bias_field * self._bias_scale
 
     def field(self, t, r):
         """
