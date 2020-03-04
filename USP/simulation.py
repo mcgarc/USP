@@ -169,14 +169,19 @@ class Simulation:
         rs = [p.r(t) for p in particles]
         return rs
 
-    def get_vs(self, t):
+    def get_vs(self, t, live=True):
         """
         Return a list of all particles velocities at the given time
 
         Args:
         t: int, index time of evaluation
+        live: bool, if true then return only the positions of live particles
         """
-        vs = [p.v(t) for p in self._particles]
+        if live:
+            particles = self.live_particles(t)
+        else:
+            particles = self.particles
+        vs = [p.v(t) for p in particles]
         return vs
 
     def get_ps(self, t):
