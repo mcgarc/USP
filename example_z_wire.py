@@ -27,7 +27,7 @@ def main():
     # Treutlein pg. 60 for current achievable
     I = 3
     I = parameter.ConstantParameter(consts.u_B * I)
-    z_0 = 1E-4
+    z_0 = 1E-5
     h = parameter.ConstantParameter(z_0)
     z_wire = wire.ZWire(I, 2*z_0)
     z_trap = trap.ClusterTrap(z_wire, h, bias_scale=[1, 1, 0])
@@ -35,19 +35,19 @@ def main():
     # Initial conditions
     T = 50E-6
     mass = consts.m_Rb
-    r_spread = 10E-6
+    r_spread = 1E-6
     v_spread = np.sqrt(2*consts.k_B*T/mass)
 
     # Particle loss (translate with the stage)
-    limit = 1E-1
-    limit = [10*limit, limit, limit]
+    limit = 3*z_0
+    limit = [limit, 10*limit, limit]
     loss_event = events.OutOfRangeBox(limit, center=[0, 0, z_0])
  
     # Simulation
-    POINTS = 300
-    t_end = .1
-    dt = 1E-5
-    PARTICLES = 8
+    POINTS = 1000
+    t_end = 1E-3
+    dt = 1E-6
+    PARTICLES = 50
     r_centre = [0., 0., z_0]
     sim = simulation.Simulation(
             z_trap,
@@ -90,13 +90,10 @@ def main():
     sim.plot_momentum_histogram(-1, 0, output_path=f'{path}p_t1_hist_x.png')
     sim.plot_momentum_histogram(-1, 1, output_path=f'{path}p_t1_hist_y.png')
     sim.plot_momentum_histogram(-1, 2, output_path=f'{path}p_t1_hist_z.png')
-    xlim = (-1E-1, 1E-1)
-    ylim = (-1E-2, 1E-2)
-    zlim = (ylim[0], ylim[1] + z_0)
+    xlim = (-3*z_0, 3*z_0)
+    ylim = (-3*z_0, 3*z_0)
+    zlim = (xlim[0], xlim[1] + z_0)
     sim.animate(xlim=xlim, ylim=ylim, zlim=zlim, output_path=f'{path}anim.mp4')
-    ylim = (-1E-3, 1E-3)
-    zlim = (ylim[0], ylim[1] + z_0)
-    sim.animate(xlim=ylim, ylim=ylim, zlim=zlim, output_path=f'{path}anim_close.mp4')
 
 
 if __name__ == '__main__':
