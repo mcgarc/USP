@@ -151,15 +151,31 @@ class ZWire(WireCluster):
     """
 
     def __init__(self, current, axial_length, end_length=5e2):
-        wires = self.create_z_wires(current, axial_length, end_length)
+        axial_length = float(axial_length)
+        end_length = float(end_length)
+        wires = self.create_wires(current, axial_length, end_length)
         self.set_wires(wires)
         # TODO Orientation
         # TODO Position (including height)
 
-    def create_z_wires(self, current, axial_length, end_length):
-        al = float(axial_length)
-        el = float(end_length)
+    def create_wires(self, current, axial_length, end_length):
+        al = axial_length
+        el = end_length
         axis = WireSegment(current, [0, -al/2, 0], [0, al/2, 0])
         end_left = WireSegment(current, [-el, -al/2, 0], [0, -al/2, 0])
         end_right = WireSegment(current, [0, al/2, 0], [el , al/2, 0])
+        return [end_left, axis, end_right]
+
+class UWire(ZWire):
+    """
+    A WireCluster forming a single U wire trap
+    """
+
+    def create_wires(self, current, axial_length, end_length):
+        """
+        Override ZWire create_wires method to form a UWire
+        """
+        axis = WireSegment(current, [-al/2, 0, 0], [al/2, 0, 0])
+        end_left = WireSegment(current, [-al/2, -el, 0], [-al/2, 0, 0])
+        end_right = WireSegment(current, [al/2, 0, 0], [al/2, -el, 0])
         return [end_left, axis, end_right]
