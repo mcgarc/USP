@@ -25,7 +25,7 @@ def main():
 
     # Initialise z wire
     # Treutlein pg. 60 for current achievable
-    I = 3
+    I = .3
     I = parameter.ConstantParameter(consts.u_B * I)
     z_0 = 1E-5
     h = parameter.ConstantParameter(z_0)
