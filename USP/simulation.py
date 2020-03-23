@@ -858,6 +858,25 @@ class Simulation:
                 output_path
                 )
 
+    def plot_start_positions_accepted(self, output_path=None):
+        """
+        Scatter plot the initial positions of the particles that were contained in the
+        trap throughout the simulation.
+
+        Args:
+        output_path: str or None, if None then show graph, otherwise save it
+        """
+        rs = [p.r(0) for p in self.live_particles(-1)]
+        rs = np.array(rs).transpose()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(rs[0], rs[1], rs[2])
+        if output_path is not None:
+            fig.savefig(output_path, bbox_inches='tight')
+        else:
+            plt.show()
+        plt.close()
+
     def plot_phase_diagram(
             self,
             particle_index,
