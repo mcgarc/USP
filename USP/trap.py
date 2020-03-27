@@ -227,3 +227,20 @@ class ClusterTrap(AbstractTrap):
         abstract method
         """
         return self.cluster.field(t, r) + self.bias_field(t)
+
+class SuperimposeTrap(AbstractTrap):
+    """
+    """
+
+    def __init__(self, traps):
+        """
+        Take the list of all the traps to sum over
+        """
+        self._traps = traps
+
+    def field(self, t, r):
+        """
+        Sum fields for all traps
+        """
+        field_comps = [trap.field(t, r) for trap in self._traps]
+        return np.array(sum(field_comps))
