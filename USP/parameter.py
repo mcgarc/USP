@@ -36,13 +36,17 @@ class AbstractParameterProfile:
                 )
         return super().__eq__(other)
 
-        
-
     def value(self, t):
         """
         Return the parameter's value at the specified time.
         """
         raise NotImplementedError
+
+    def __call__(self, t):
+        """
+        Alias call as self.value
+        """
+        return self.value(t)
 
 
 class ConstantParameter(AbstractParameterProfile):
