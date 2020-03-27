@@ -5,6 +5,7 @@ from USP.field import StaticField
 
 from USP import parameter
 from USP import consts
+from USP import utils
 
 class AbstractPotentialTrap:
     """
@@ -41,6 +42,46 @@ class AbstractTrap:
         Return the trap potential at position r and time t
         """
         return np.linalg.norm(self.field(t, r))
+
+    def plot_potential_cut(
+            self,
+            t,
+            x_start,
+            x_end,
+            direction,
+            points=100,
+            cut_point=[0, 0, 0],
+            output_path=None,
+            figsize=(6, 4),
+            dpi=300
+            ):
+        """
+        Plot a cut through of the potential along specified direction.
+        """
+        r = utils.clean_vector(cut_point)
+        direction, dir_label = utils.clean_direction_index(
+                direction,
+                str_rep=True
+                )
+        x_data = np.linspace(x_start, x_end, num=points)
+        y_data = []
+        for point in x_data:
+            r[direction] = point
+            y_data.append(self.potential(t, r))
+        y_data = np.array(y_data)
+        x_data *= 1000
+        y_data *= 1000
+        print(y_data)
+        utils.plot_2D_scatter(
+            x_data,
+            y_data,
+            f'Potential cutthrough {dir_label}',
+            dir_label,
+            'potential',
+            figsize,
+            dpi,
+            output_path
+            )
 
 class FieldTrap(AbstractTrap):
     """
