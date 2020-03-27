@@ -17,6 +17,7 @@ centre as time progresses
 import numpy as np
 
 from . import utils
+from . import parameter
 
 class StaticField:
     """
@@ -52,7 +53,7 @@ class QuadrupoleField:
         Constructor for QuadrupoleField
 
         Args:
-        b_1: float, field gradient
+        b_1: USP.parameter, field gradient
         r_0: list-like, zero position (optional, default [0,0,0])
         """
         self.b_1 = b_1
@@ -68,7 +69,7 @@ class QuadrupoleField:
         """
         r = np.array(r) - self.r_0
         scale = np.array([-0.5, -0.5, 1])
-        return self.b_1 * scale * r
+        return self.b_1(t) * scale * r
 
 class QuadrupoleFieldTranslate(QuadrupoleField):
     """
@@ -79,7 +80,7 @@ class QuadrupoleFieldTranslate(QuadrupoleField):
     def __init__(
             self,
             b_1,
-            param,
+            z_param,
             r_0=[0,0,0],
             direction=2
             ):
@@ -88,7 +89,7 @@ class QuadrupoleFieldTranslate(QuadrupoleField):
 
         Args:
         b_1: float, field gradient
-        param: USP.parameter object, determines position along `direction` axis
+        z_param: USP.parameter object, determines position along `direction` axis
         r_0: list-like, zero position (optional, default [0,0,0])
         direction: str or int, represents the (cardinal) direction of
         translation
@@ -97,7 +98,7 @@ class QuadrupoleFieldTranslate(QuadrupoleField):
         # FIXME importing USP.parameter breaks multiprocessing
         #if not isinstance(param, parameter.AbstractParameterProfile):
         #    raise ValueError('QuadrupoleFieldTranslate expects a USP parameter')
-        self.param = param
+        self.z_param = z_param
         self.direction = utils.clean_direction_index(direction)
 
     def field(self, t, r):
@@ -109,7 +110,7 @@ class QuadrupoleFieldTranslate(QuadrupoleField):
         r: list-like, spatial position
         """
         r_0 = self.r_0.copy()
-        r_0[self.direction] = self.param.value(t)
+        r_0[self.direction] = self.z_param(t)
         r = np.array(r) - r_0
         scale = np.array([-0.5, -0.5, 1.])
-        return self.b_1 * scale * r
+        return self.b_1(t) * scale * r

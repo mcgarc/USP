@@ -161,8 +161,8 @@ class ZWire(WireCluster):
     def create_wires(self, current, axial_length, end_length):
         al = axial_length
         el = end_length
-        axis = WireSegment(current, [0, -al/2, 0], [0, al/2, 0])
         end_left = WireSegment(current, [-el, -al/2, 0], [0, -al/2, 0])
+        axis = WireSegment(current, [0, -al/2, 0], [0, al/2, 0])
         end_right = WireSegment(current, [0, al/2, 0], [el , al/2, 0])
         return [end_left, axis, end_right]
 
@@ -175,7 +175,9 @@ class UWire(ZWire):
         """
         Override ZWire create_wires method to form a UWire
         """
-        axis = WireSegment(current, [-al/2, 0, 0], [al/2, 0, 0])
+        al = axial_length
+        el = end_length
         end_left = WireSegment(current, [-al/2, -el, 0], [-al/2, 0, 0])
+        axis = WireSegment(current, [-al/2, 0, 0], [al/2, 0, 0])
         end_right = WireSegment(current, [al/2, 0, 0], [al/2, -el, 0])
         return [end_left, axis, end_right]
