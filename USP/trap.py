@@ -52,7 +52,7 @@ class AbstractTrap:
             points=100,
             cut_point=[0, 0, 0],
             output_path=None,
-            figsize=(6, 4),
+            figsize=(16, 9),
             dpi=300
             ):
         """
@@ -69,15 +69,12 @@ class AbstractTrap:
             r[direction] = point
             y_data.append(self.potential(t, r))
         y_data = np.array(y_data)
-        x_data *= 1000
-        y_data *= 1000
-        print(y_data)
-        utils.plot_2D_scatter(
+        utils.plot_2D_line(
             x_data,
             y_data,
-            f'Potential cutthrough {dir_label}',
-            dir_label,
-            'potential',
+            f'Trap potential cut through {dir_label}',
+            f'{dir_label} (m)',
+            'potential (J)',
             figsize,
             dpi,
             output_path
