@@ -167,7 +167,7 @@ class Simulation:
         else:
             particles = self.particles
         rs = [p.r(t) for p in particles]
-        return rs
+        return np.array(rs)
 
     def get_vs(self, t, live=True):
         """
@@ -182,7 +182,7 @@ class Simulation:
         else:
             particles = self.particles
         vs = [p.v(t) for p in particles]
-        return vs
+        return np.array(vs)
 
     def get_ps(self, t):
         """
@@ -192,7 +192,7 @@ class Simulation:
         t: int, index time of evaluation
         """
         ps = [p.v(t) * p.m for p in self._particles]
-        return ps
+        return np.array(ps)
 
     def get_KEs(self, t):
         """
@@ -232,7 +232,7 @@ class Simulation:
         Args:
         t: int, index time of evaluation
         """
-        rs = np.array(self.get_rs(t))
+        rs = self.get_rs(t)
         rs_T = rs.transpose()
         x_mean = np.mean(rs_T[0])
         y_mean = np.mean(rs_T[1])
@@ -247,7 +247,7 @@ class Simulation:
         Args:
         t: int, index time of evaluation
         """
-        rs = np.array(self.get_rs(t))
+        rs = self.get_rs(t)
         rs_T = rs.transpose()
         x_std = np.std(rs_T[0])
         y_std = np.std(rs_T[1])
@@ -277,7 +277,7 @@ class Simulation:
         Args:
         t: int, index time of evaluation
         """
-        ps = np.array(self.get_ps(t))
+        ps = self.get_ps(t)
         ps_T = ps.transpose()
         p_x_std = np.std(ps_T[0])
         p_y_std = np.std(ps_T[1])
@@ -464,8 +464,8 @@ class Simulation:
         """
         3D plot of inital and final positions in the simulation
         """
-        start_rs = np.array(self.get_rs(0)).transpose()
-        end_rs = np.array(self.get_rs(-1)).transpose()
+        start_rs = self.get_rs(0).transpose()
+        end_rs = self.get_rs(-1).transpose()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
@@ -515,8 +515,8 @@ class Simulation:
     def plot_particle_number(
             self,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI
             ):
         """
         Plot the particle number at the sample points
@@ -544,8 +544,8 @@ class Simulation:
     def plot_temperatures(
             self,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             ):
         """
         Plot the temperature at the sample points
@@ -574,8 +574,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             ):
         """
         Plot the cloud width for given direction for each sample point
@@ -610,8 +610,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI
             ):
         """
         Plot the cloud momentum width for given direction for each sample point
@@ -645,8 +645,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -681,8 +681,8 @@ class Simulation:
     def plot_cloud_volume(
             self,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -716,8 +716,8 @@ class Simulation:
     def plot_cloud_phase_space_volume(
             self,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -754,8 +754,8 @@ class Simulation:
             direction,
             bins=20,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             ):
         """
         Plot a histogram of particle positions at given time, projected into
@@ -771,7 +771,7 @@ class Simulation:
         """
         # Get data
         direction, dir_label = utils.clean_direction_index(direction, True)
-        data = 1000 * np.array(self.get_rs(time)).transpose()[direction]
+        data = 1000 * self.get_rs(time).transpose()[direction]
         # Plot
         self._plot_histogram(
                 data,
@@ -790,8 +790,8 @@ class Simulation:
             direction,
             bins=20,
             output_path=None,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             ):
         """
         Plot a histogram of particle momenta at given time, projected into
@@ -807,7 +807,7 @@ class Simulation:
         """
         # Get data
         direction, dir_label = utils.clean_direction_index(direction, True)
-        data = np.array(self.get_ps(time)).transpose()[direction]
+        data = self.get_ps(time).transpose()[direction]
         # Plot
         self._plot_histogram(
                 data,
@@ -839,15 +839,38 @@ class Simulation:
             plt.show()
         plt.close()
 
-    def plot_phase_diagram(
+    def plot_phase_space_diagram(
+            self,
+            t,
+            dir_index,
+            output_path=None,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI
+            ):
+        dir_index, dir_label = utils.clean_direction_index(dir_index, True)
+        print(self.get_rs(t))
+        positions = self.get_rs(t)[:, dir_index]
+        momenta = self.get_ps(t)[:, dir_index]
+        utils.plot_2D_scatter(
+                positions,
+                momenta,
+                f'Phasespace projection into {dir_label}',
+                f'{dir_label} (m)',
+                f'v_{dir_label} (m/s)',
+                figsize,
+                dpi,
+                output_path
+                )
+
+    def plot_phase_diagram_single(
             self,
             particle_index,
             dir_index,
             output_path=None,
             time_gradient=False,
             colorbar=False,
-            figsize=(6, 4),
-            dpi=300,
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI,
             **plot_kwargs
             ):
         """
@@ -925,7 +948,7 @@ class Simulation:
         *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
-        data = [np.array(self.get_rs(t, live=False)).transpose()
+        data = [self.get_rs(t, live=False).transpose()
                 for t
                 in range(self._sample_points)
                 ]

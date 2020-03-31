@@ -55,19 +55,20 @@ def main():
     limit = 10E-3
     loss_event = events.OutOfRangeBox(limit, center=[0, 0, z_0])
 
-    u_trap.plot_potential_cut(
-            1,
-            0.5E-3,
-            2*z_0,
-            'z',
-            cut_point=[0,0,z_0]
-            #output_path=f'{path}_pot_plot_x'
-            )
-    quit()
+#    u_trap.plot_potential_cut(
+#            1,
+#            0.5E-3,
+#            2*z_0,
+#            'z',
+#            cut_point=[0,0,z_0]
+#            #output_path=f'{path}_pot_plot_x'
+#            )
+#    quit()
  
     # Simulation
     POINTS = 400
-    t_end = 7E-3
+    #t_end = 7E-3
+    t_end = 1E-4
     dt = 0.5E-6
     PARTICLES = 4
     r_centre = [0., 0., z_0]
@@ -112,6 +113,9 @@ def main():
     sim.plot_momentum_histogram(-1, 0, output_path=f'{path}p_t1_hist_x.png')
     sim.plot_momentum_histogram(-1, 1, output_path=f'{path}p_t1_hist_y.png')
     sim.plot_momentum_histogram(-1, 2, output_path=f'{path}p_t1_hist_z.png')
+    for t in [0, 10, 100, 300]:
+        for d in ['x', 'y', 'z']:
+            sim.plot_phase_space_diagram(t, d, f'{path}psd_{d}_{t}')
     #xlim = (-3*z_0, 3*z_0)
     #ylim = (-3*z_0, 3*z_0)
     #zlim = (xlim[0], xlim[1] + z_0)

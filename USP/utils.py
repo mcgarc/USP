@@ -3,6 +3,8 @@ import csv
 from matplotlib import pyplot as plt
 
 DX = 1E-6
+DEFAULT_DPI = 300
+DEFAULT_FIGSIZE = (16, 9)
 
 def clean_vector(vector, length=3, cast_type=None):
     """
@@ -106,7 +108,7 @@ def plot_2D_scatter(
     """
     fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot(111)
-    ax.plot(data_x, data_y)
+    ax.scatter(data_x, data_y)
     plt.title(title, fontsize=20)
     plt.xlabel(label_x, fontsize=16)
     plt.ylabel(label_y, fontsize=16)

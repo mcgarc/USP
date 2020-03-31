@@ -52,8 +52,8 @@ class AbstractTrap:
             points=100,
             cut_point=[0, 0, 0],
             output_path=None,
-            figsize=(16, 9),
-            dpi=300
+            figsize=utils.DEFAULT_FIGSIZE,
+            dpi=utils.DEFAULT_DPI
             ):
         """
         Plot a cut through of the potential along specified direction.
