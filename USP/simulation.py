@@ -848,7 +848,6 @@ class Simulation:
             dpi=utils.DEFAULT_DPI
             ):
         dir_index, dir_label = utils.clean_direction_index(dir_index, True)
-        print(self.get_rs(t))
         positions = self.get_rs(t)[:, dir_index]
         momenta = self.get_ps(t)[:, dir_index]
         utils.plot_2D_scatter(
