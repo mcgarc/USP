@@ -68,13 +68,14 @@ def main():
     # Simulation
     POINTS = 400
     #t_end = 7E-3
-    t_end = 1E-4
+    t_0 = 0
+    t_end = 1E-5
     dt = 0.5E-6
-    PARTICLES = 4
+    PARTICLES = 1
     r_centre = [0., 0., z_0]
     sim = simulation.Simulation(
             combi_trap,
-            0,
+            t_0,
             t_end,
             dt,
             POINTS,
@@ -85,7 +86,7 @@ def main():
     sim.run()
 
     E_0 = sim.get_total_energy(0)
-    E_end = sim.get_total_energy(-1)
+    E_end = sim.get_total_energy(t_end)
     print(f'Energy differential: {(E_0 - E_end) / E_0:.5f} %')
     
     sim.plot_temperatures(output_path=f'{path}temps.png')
@@ -101,21 +102,21 @@ def main():
     sim.plot_velocity_width(2, output_path=f'{path}velocity_width_z.png')
     sim.plot_cloud_volume(output_path=f'{path}volume.png')
     sim.plot_cloud_phase_space_volume(output_path=f'{path}ps_volum.png')
-    sim.plot_position_histogram(0, 0, output_path=f'{path}r_t0_hist_x.png')
-    sim.plot_position_histogram(0, 1, output_path=f'{path}r_t0_hist_y.png')
-    sim.plot_position_histogram(0, 2, output_path=f'{path}r_t0_hist_z.png')
-    sim.plot_position_histogram(-1, 0, output_path=f'{path}r_t1_hist_x.png')
-    sim.plot_position_histogram(-1, 1, output_path=f'{path}r_t1_hist_y.png')
-    sim.plot_position_histogram(-1, 2, output_path=f'{path}r_t1_hist_z.png')
-    sim.plot_momentum_histogram(0, 0, output_path=f'{path}p_t0_hist_x.png')
-    sim.plot_momentum_histogram(0, 1, output_path=f'{path}p_t0_hist_y.png')
-    sim.plot_momentum_histogram(0, 2, output_path=f'{path}p_t0_hist_z.png')
-    sim.plot_momentum_histogram(-1, 0, output_path=f'{path}p_t1_hist_x.png')
-    sim.plot_momentum_histogram(-1, 1, output_path=f'{path}p_t1_hist_y.png')
-    sim.plot_momentum_histogram(-1, 2, output_path=f'{path}p_t1_hist_z.png')
-    for t in [0, 10, 100, 300]:
+    sim.plot_position_histogram(t_0, 0, output_path=f'{path}r_t0_hist_x.png')
+    sim.plot_position_histogram(t_0, 1, output_path=f'{path}r_t0_hist_y.png')
+    sim.plot_position_histogram(t_0, 2, output_path=f'{path}r_t0_hist_z.png')
+    sim.plot_position_histogram(t_end, 0, output_path=f'{path}r_t1_hist_x.png')
+    sim.plot_position_histogram(t_end, 1, output_path=f'{path}r_t1_hist_y.png')
+    sim.plot_position_histogram(t_end, 2, output_path=f'{path}r_t1_hist_z.png')
+    sim.plot_momentum_histogram(t_0, 0, output_path=f'{path}p_t0_hist_x.png')
+    sim.plot_momentum_histogram(t_0, 1, output_path=f'{path}p_t0_hist_y.png')
+    sim.plot_momentum_histogram(t_0, 2, output_path=f'{path}p_t0_hist_z.png')
+    sim.plot_momentum_histogram(t_end, 0, output_path=f'{path}p_t1_hist_x.png')
+    sim.plot_momentum_histogram(t_end, 1, output_path=f'{path}p_t1_hist_y.png')
+    sim.plot_momentum_histogram(t_end, 2, output_path=f'{path}p_t1_hist_z.png')
+    for ind, t in enumerate(np.linspace(t_0, t_end, 5)):
         for d in ['x', 'y', 'z']:
-            sim.plot_phase_space_diagram(t, d, f'{path}psd_{d}_{t}')
+            sim.plot_phase_space_diagram(t, d, f'{path}psd_{d}_{ind}')
     #xlim = (-3*z_0, 3*z_0)
     #ylim = (-3*z_0, 3*z_0)
     #zlim = (xlim[0], xlim[1] + z_0)

@@ -7,3 +7,4 @@ from . import utils
 from . import wire
 from . import simulation
 from . import events
+from . import figs

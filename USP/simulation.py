@@ -19,6 +19,7 @@ from USP import trap as USP_trap
 from USP import particle
 from USP import utils
 from USP import consts
+from USP import figs
 import numpy as np
 from itertools import repeat
 import multiprocessing as mp
@@ -79,9 +80,16 @@ class Simulation:
         self._sample_points = sample_points
         self._events = events
         self._process_no = process_no
-        self._eval_times = np.arange(t_0, t_end, dt)
+        self._sample_times = np.linspace(t_0, t_end, sample_points)
         self._particles = None
         self.run_time = None
+
+    @property
+    def times(self):
+        """
+        Alias self._sample_times, the times at which results will be sampled
+        """
+        return self._sample_times
 
     @property
     def particles(self):
@@ -96,15 +104,14 @@ class Simulation:
         """
         raise NotImplemented
 
-    def live_particles(self, t_index):
+    def live_particles(self, t):
         """
         Return the list of all particles that have not been terminated at the
         given time
 
         Args:
-        t_index: int, time index of evaluating particle termination
+        t: float, time of evaluating particle termination
         """
-        t = self._index_to_time(t_index)
         return [p for p in self.particles if p.terminated > t]
 
     def terminated_particles(self, t, index=True):
@@ -113,21 +120,9 @@ class Simulation:
         time
 
         Args:
-        t_index: int, time index of evaluating particle termination
+        t: float, time of evaluating particle termination
         """
-        t = self._index_to_time(t_index)
         return [p for p in self.particles if p.terminated < t]
-
-    def _index_to_time(self, time_index):
-        """
-        Convert a time index (int) into an absolute time (float) based on the
-        number of samples
-
-        Args:
-        time_index: int, the time index to be converted
-        """
-        Dt = (self._t_end - self._t_0) / self._sample_points
-        return time_index * Dt
 
     def _check_particles(self, message=None):
         """
@@ -159,7 +154,7 @@ class Simulation:
         Return a list of all particles positions at the given time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         live: bool, if true then return only the positions of live particles
         """
         if live:
@@ -174,7 +169,7 @@ class Simulation:
         Return a list of all particles velocities at the given time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         live: bool, if true then return only the positions of live particles
         """
         if live:
@@ -189,7 +184,7 @@ class Simulation:
         Return a list of all particle momenta at the given time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         ps = [p.v(t) * p.m for p in self._particles]
         return np.array(ps)
@@ -199,7 +194,7 @@ class Simulation:
         Return a list of the kinetic energy for each paticle at given time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         kinetics = [p.kinetic_energy(t) for p in self._particles]
         return kinetics
@@ -210,7 +205,7 @@ class Simulation:
         time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         kinetics = [p.kinetic_energy(t) for p in self.particles]
         mean_kinetic = np.mean(np.array(kinetics))
@@ -221,7 +216,7 @@ class Simulation:
         Return the number of live particles in the simulation at time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         return len(self.live_particles(t))
 
@@ -230,7 +225,7 @@ class Simulation:
         Return the cloud centre as a numpy array at given time
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         rs = self.get_rs(t)
         rs_T = rs.transpose()
@@ -245,7 +240,7 @@ class Simulation:
         array
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         rs = self.get_rs(t)
         rs_T = rs.transpose()
@@ -260,7 +255,7 @@ class Simulation:
         directions as a numpy array
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         vs = np.array(self.get_vs(t))
         vs_T = vs.transpose()
@@ -275,7 +270,7 @@ class Simulation:
         directions as a numpy array
 
         Args:
-        t: int, index time of evaluation
+        t: float, time of evaluation
         """
         ps = self.get_ps(t)
         ps_T = ps.transpose()
@@ -455,68 +450,29 @@ class Simulation:
         Get the total energy (KE + potential) at a specified time
 
         Args:
-        t: int, time index at which to retrieve Q
+        t: float, time at which to retrieve Q
         """
         energies = [p.energy(t, self._trap.potential) for p in self._particles]
         return np.sum(np.array(energies))
 
+    # TODO Use USP.figs
     def plot_start_end_positions(self):
         """
         3D plot of inital and final positions in the simulation
         """
         start_rs = self.get_rs(0).transpose()
-        end_rs = self.get_rs(-1).transpose()
+        end_rs = self.get_rs(self._t_end).transpose()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(start_rs[0], start_rs[1], start_rs[2], 'b')
         ax.scatter(end_rs[0], end_rs[1], end_rs[2], 'r')
         plt.show()
 
-
-    def _plot_histogram(
-            self,
-            data,
-            bins,
-            title,
-            label_x,
-            label_y,
-            figsize,
-            dpi,
-            output_path
-            ):
-        """
-        Abstracted plotting of histogram
-
-        Args:
-        data: list or np.array, the data to plot in the histogram
-        bins: int, the number of bins in the histogram
-        title: str, the title of the plot
-        label_x: str, the x-axis label
-        label_y: str, the y-axis label
-        figsize: pair of ints, size of output plot
-        dpi:int, dpi of output plot
-        output_path: str or None, if None then show graph, otherwise save it
-        """
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        ax.hist(data, bins=bins)
-        plt.title(title, fontsize=24)
-        plt.xlabel(label_x, fontsize=20)
-        plt.ylabel(label_y, fontsize=20)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-        # Display or save
-        if output_path is not None:
-            fig.savefig(output_path, bbox_inches='tight')
-        else:
-            plt.show()
-        plt.close()
-
     def plot_particle_number(
             self,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI
             ):
         """
         Plot the particle number at the sample points
@@ -527,11 +483,10 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        nos = [self.particle_number(t) for t in range(self._sample_points)]
+        nos = [self.particle_number(t) for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_line(
+                self.times,
                 nos,
                 f'Particle number',
                 'time (s)',
@@ -544,8 +499,8 @@ class Simulation:
     def plot_temperatures(
             self,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             ):
         """
         Plot the temperature at the sample points
@@ -556,11 +511,10 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        temps = [1E6 * self.temperature(t) for t in range(self._sample_points)]
+        temps = [1E6 * self.temperature(t) for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 temps,
                 f'Cloud temperature',
                 'time (s)',
@@ -574,8 +528,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             ):
         """
         Plot the cloud width for given direction for each sample point
@@ -589,14 +543,10 @@ class Simulation:
         """
         # Get data
         direction, dir_label = utils.clean_direction_index(direction, True)
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        widths = [1E3 * self.width(t)[direction]
-                  for t
-                  in range(self._sample_points)
-                  ]
+        widths = [1E3 * self.width(t)[direction] for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 widths,
                 f'Cloud width in {dir_label}',
                 'time (s)',
@@ -610,8 +560,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI
             ):
         """
         Plot the cloud momentum width for given direction for each sample point
@@ -623,15 +573,11 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
-        widths = [self.velocity_width(t)[direction]
-                  for t
-                  in range(self._sample_points)
-                  ]
+        widths = [self.velocity_width(t)[direction] for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 widths,
                 f'Velocity width in {dir_label}',
                 'time (s)',
@@ -645,8 +591,8 @@ class Simulation:
             self,
             direction,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -660,15 +606,11 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         direction, dir_label = utils.clean_direction_index(direction, True)
-        centers = [self.center(t)[direction]
-                   for t
-                   in range(self._sample_points)
-                   ]
+        centers = [self.center(t)[direction] for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 centers,
                 f'Cloud centre position along {dir_label} direction',
                 'time (s)',
@@ -681,8 +623,8 @@ class Simulation:
     def plot_cloud_volume(
             self,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -696,14 +638,10 @@ class Simulation:
         dpi:int, dpi of output plot
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
-        vols = [1E9 * np.prod(self.width(t))
-                for t
-                in range(self._sample_points)
-                ]
+        vols = [1E9 * np.prod(self.width(t)) for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 vols,
                 f'Cloud volume',
                 'time (s)',
@@ -716,8 +654,8 @@ class Simulation:
     def plot_cloud_phase_space_volume(
             self,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             dist_unit='m'
             ):
         """
@@ -730,15 +668,11 @@ class Simulation:
         dist_unit: str, representation of distance unit for labelling
         """
         # Get data
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         vols = [1E9 * np.prod(self.width(t)) * np.prod(self.momentum_width(t))
-                / consts.u**3
-                for t
-                in range(self._sample_points)
-                ]
+                / consts.u**3 for t in self.times]
         # Plot
-        utils.plot_2D_scatter(
-                times,
+        figs.plot_2D_scatter(
+                self.times,
                 vols,
                 f'Cloud PS volume',
                 'time (s)',
@@ -754,8 +688,8 @@ class Simulation:
             direction,
             bins=20,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             ):
         """
         Plot a histogram of particle positions at given time, projected into
@@ -773,7 +707,7 @@ class Simulation:
         direction, dir_label = utils.clean_direction_index(direction, True)
         data = 1000 * self.get_rs(time).transpose()[direction]
         # Plot
-        self._plot_histogram(
+        figs.plot_histogram(
                 data,
                 bins,
                 f'Position distribution in {dir_label}',
@@ -790,15 +724,15 @@ class Simulation:
             direction,
             bins=20,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             ):
         """
         Plot a histogram of particle momenta at given time, projected into
         one cardinal direction 
 
         Args:
-        time: int, the time index at which to plot
+        time: float, time at which to plot
         direction: direction index along which to plot centre
         bins: int, the number of bins in the histogram
         output_path: str or None, if None then show graph, otherwise save it
@@ -809,7 +743,7 @@ class Simulation:
         direction, dir_label = utils.clean_direction_index(direction, True)
         data = self.get_ps(time).transpose()[direction]
         # Plot
-        self._plot_histogram(
+        figs.plot_histogram(
                 data,
                 bins,
                 f'Momentum distribution in {dir_label}',
@@ -828,7 +762,7 @@ class Simulation:
         Args:
         output_path: str or None, if None then show graph, otherwise save it
         """
-        rs = [p.r(0) for p in self.live_particles(-1)]
+        rs = [p.r(self._t_0) for p in self.live_particles(-1)]
         rs = np.array(rs).transpose()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
@@ -844,13 +778,13 @@ class Simulation:
             t,
             dir_index,
             output_path=None,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI
             ):
         dir_index, dir_label = utils.clean_direction_index(dir_index, True)
         positions = self.get_rs(t)[:, dir_index]
         momenta = self.get_ps(t)[:, dir_index]
-        utils.plot_2D_scatter(
+        figs.plot_2D_scatter(
                 positions,
                 momenta,
                 f'Phasespace projection into {dir_label}',
@@ -868,8 +802,8 @@ class Simulation:
             output_path=None,
             time_gradient=False,
             colorbar=False,
-            figsize=utils.DEFAULT_FIGSIZE,
-            dpi=utils.DEFAULT_DPI,
+            figsize=figs.DEFAULT_FIGSIZE,
+            dpi=figs.DEFAULT_DPI,
             **plot_kwargs
             ):
         """
@@ -884,19 +818,16 @@ class Simulation:
             colour legend for the times
         figsize: pair of ints, size of output plot
         dpi:int, dpi of output plot
+        points: int, no. of points to include in phase space diagram
         plot_kwargs: kwargs to be passed to the scatter plot fn
         """
         # Get coordinates
-        times = np.linspace(self._t_0, self._t_end, self._sample_points)
         particle = self._particles[particle_index]
-        Q_projections = [particle.Q_projection(t, 0)
-                         for t
-                         in range(self._sample_points)
-                         ]
+        Q_projections = [particle.Q_projection(t, 0) for t in self.times]
         Q_projections = np.array(Q_projections).transpose()
         # Setup time gradient if required
         if time_gradient:
-            plot_kwargs['c'] = times
+            plot_kwargs['c'] = self.times
         # Create plot
         fig = plt.figure(figsize=figsize, dpi=dpi)
         ax = fig.add_axes([0.05, 0.05, 0.8, 0.8])
@@ -947,10 +878,7 @@ class Simulation:
         *lim: pair of floats, limits for the axes of the animation
         """
         # Get data for frames
-        data = [self.get_rs(t, live=False).transpose()
-                for t
-                in range(self._sample_points)
-                ]
+        data = [self.get_rs(t, live=False).transpose() for t in self.times]
         data = np.array(data)
         # Initialise figure and start position
         fig = plt.figure()

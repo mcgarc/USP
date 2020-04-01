@@ -9,6 +9,7 @@ Author: Cameron McGarry, 2020
 Classes:
 
 Particle: Holds information on a particle and its integrator
+Trajectory: Holds information on a trajectory
 """
 
 import numpy as np
@@ -46,10 +47,10 @@ class Particle:
             r,
             v,
             m,
-            t_0=None,
-            t_end=None,
-            dt=None,
-            points=None
+            t_0,
+            t_end,
+            dt,
+            points
             ):
         """
         Initialise a particle with starting position, velocity and mass
@@ -58,11 +59,10 @@ class Particle:
         r: list-like, initial position
         v: list-like, initial velocity
         m: float, mass
-        t0: float, starting time, or None (default)
-        t_end: float, end time, or None (default)
-        dt: float, step, or None (default)
-        points: int, the number of points at which to save Q from integrator,
-        or None (default)
+        t0: float, starting time
+        t_end: float, end time
+        dt: float, step, or None
+        points: int, the number of points at which to save Q from integrator
         """
         self.set_r(r)
         self._r_0 = self.r
@@ -74,9 +74,10 @@ class Particle:
         self._dt = dt
         self._points = points
         self._result = None
+        # Start with no termination, i.e. time terminated is infinity
         self._terminated = np.inf
         self._index = next(self._index_count)
-        self._result_times = None
+        self._result_times = np.linspace(t_0, t_end, points)
 
     @property
     def m(self):
@@ -99,10 +100,11 @@ class Particle:
 
     def Q(self, t):
         """
-        Return Q = [r, v] at time index t
+        Return Q = [r, v] at the closest time t to that which was sampled by
+        the results
 
         Args:
-        t: integer, time index TODO
+        t: float, time
         """
         if self._result is None:
             if t != 0:
@@ -110,7 +112,39 @@ class Particle:
             else:
                 return np.concatenate((self._r, self._v))  # Q(t=0)
         else:
-            return self._result[t]
+            t_index = self._get_time_index(t)
+            return self._result[t_index]
+
+    def _get_time_index(self, t):
+        """
+        Returns the index of the time closest to the input time. Used to
+        address the result list
+
+        Args:
+        t: float, time
+        """
+        index = 0
+        # Check that we are in bounds
+        if t < self._t_0 or t > self._t_end:
+            raise ValueError('Time specification out of bounds for particle')
+        # Otherwise iterate
+        for sample_time in self._result_times:
+            if t <= sample_time:
+                return index
+            index += 1
+        # If somehow we get here then set index to -1
+        return -1
+
+#    def _index_to_time(self, time_index):
+#        """
+#        Convert a time index (int) into an absolute time (float) based on the
+#        number of samples
+#
+#        Args:
+#        time_index: int, the time index to be converted
+#        """
+#        Dt = (self._t_end - self._t_0) / self._sample_points
+#        return time_index * Dt
 
     def r(self, t):
         return self.Q(t)[:3]
@@ -123,17 +157,14 @@ class Particle:
 
     def Q_projection(self, t, dir_index):
         """
-        Return  the vector [r_i, v_i] at time t
+        Return the projection of Q onto the ith 2D plane, i.e. return the
+        vector [r_i, v_i] at time t
 
         Arg:
         t: float, time
         dir_index: int, 0, 1, 2 corresponds to x, y and z respectvely
         """
-        i = int(dir_index)
-        if i not in [0, 1, 2]:
-            raise ValueError(
-                    'Direction index unrecognised (must be 0, 1 or 2)'
-                    )
+        i = utils.clean_direction_index(dir_index)
         return np.array([self.r(t)[i], self.v(t)[i]])
 
     def set_r(self, r):
@@ -193,22 +224,11 @@ class Particle:
         events: (list of) callable: event method(s) to be passed to Desolver
         integrator
         """
-        # Ensure that time values are defined
-        conditions = [
-                self._t_0 is None,
-                self._t_end is None,
-                self._dt is None
-                ]
-        if True in conditions:
-            raise RuntimeError('Particle time values undefined')
-        # Check if sample points are defined
-        if self._points is None:
-            raise NotImplemented('Cannot yet handle dense output')  # FIXME
-        # Construct dQ_dt, which is to be stepped by the integrator
+        # Initialise Desolver integrator
         integ = de.OdeSystem(
                 self._dQ_dt,
                 y0=D.array(self.Q(0)),
-                dense_output=False,
+                dense_output=True,
                 t=(self._t_0, self._t_end),
                 dt=self._dt,
                 constants={'potential': potential}
@@ -216,10 +236,12 @@ class Particle:
         integ.set_method('SymplecticEulerSolver')
         integ.integrate(events=events)
         # Look for early completion by comparing last element of evaluation
-        # times to desired end time
+        # times to desired end time. Use isclose because integ can be off by
+        # fp error
         integ_end_time = integ.t[-1]
-        if integ_end_time != self._t_end:
+        if not np.isclose(integ_end_time, self._t_end):
             self._terminate(integ_end_time)
+        # Post-processing of resulting trajectory
         self._result = [integ[float(t)][1] for t in self.result_times]
 
     def _dQ_dt(self, t, Q, potential):
