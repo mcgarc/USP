@@ -42,6 +42,15 @@ def _integ(particle, potential, events):
     particle.integ(potential, events=events)
     return particle
 
+def load_pickle(filename):
+    """
+    Load a pickled simulation object and return it
+
+    Args:
+    filename
+    """
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
 class Simulation:
     """
@@ -279,50 +288,15 @@ class Simulation:
         p_z_std = np.std(ps_T[2])
         return np.array([p_x_std, p_y_std, p_z_std])
 
-    # TODO Improve output/ fix
-    def save_sim_info(self, filename):
+    def pickle(self, filename):
         """
-        Save information on the string
+        Save the simulation object as a pickle.
 
         Args:
-        filename: str, file to save csv
-        """
-        output = f'''
-        Start: {self._t_0}
-        End: {self._t_end}
-        No. of particles: {self._N_particles}
-        '''
-        with open(filename, 'w') as f:
-            f.write(self._particles, f)
-
-    def save_Q_to_csv(self, t, filename):
-        """
-        Save Q(t) for each particle as CSV
-
-        Args:
-        t: int, time index at which to retrieve Q
-        filename: str, file to save csv
-        """
-
-        with open(filename, 'w') as f:
-            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-            for p in self._particles:
-                row = [p.index] + list(p.Q(t))
-                wr.writerow(row)
-
-    def save_to_pickle(self, filename):
-        """
-        Save particles as a pickle
+        filename: the path at which to store the pickle file
         """
         with open(filename, 'wb') as f:
-            pickle.dump(self._particles, f)
-
-    def load_from_pickle(self, filename):
-        """
-        Load particles from pickle
-        """
-        with open(filename, 'rb') as f:
-            self._particles = pickle.load(f)
+            pickle.dump(self, f)
 
     def run(self):
         """
