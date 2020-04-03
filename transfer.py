@@ -67,9 +67,8 @@ def main():
  
     # Simulation
     POINTS = 400
-    #t_end = 7E-3
     t_0 = 0
-    t_end = 1E-5
+    t_end = 10E-5
     dt = 0.5E-6
     PARTICLES = 1
     r_centre = [0., 0., z_0]
@@ -114,7 +113,7 @@ def main():
     sim.plot_momentum_histogram(t_end, 0, output_path=f'{path}p_t1_hist_x.png')
     sim.plot_momentum_histogram(t_end, 1, output_path=f'{path}p_t1_hist_y.png')
     sim.plot_momentum_histogram(t_end, 2, output_path=f'{path}p_t1_hist_z.png')
-    for ind, t in enumerate(np.linspace(t_0, t_end, 5)):
+    for ind, t in enumerate(np.linspace(t_0, t_end, 20)):
         for d in ['x', 'y', 'z']:
             sim.plot_phase_space_diagram(t, d, f'{path}psd_{d}_{ind}')
     #xlim = (-3*z_0, 3*z_0)
