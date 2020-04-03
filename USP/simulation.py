@@ -783,10 +783,10 @@ class Simulation:
             ):
         dir_index, dir_label = utils.clean_direction_index(dir_index, True)
         positions = self.get_rs(t)[:, dir_index]
-        momenta = self.get_ps(t)[:, dir_index]
+        velocities = self.get_vs(t)[:, dir_index]
         figs.plot_2D_scatter(
                 positions,
-                momenta,
+                velocities,
                 f'Phasespace projection into {dir_label}',
                 f'{dir_label} (m)',
                 f'v_{dir_label} (m/s)',
