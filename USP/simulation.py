@@ -13,6 +13,7 @@ evaluation of particle integrators
 
 Functions:
 _integ: Used to call integration method of a particle in multiprocessing
+load_pickle: Wrapper to easily load a pickle binary
 """
 
 from USP import trap as USP_trap
@@ -105,6 +106,10 @@ class Simulation:
     @property
     def dt(self):
         return self._dt
+
+    @property
+    def points(self):
+        return self._sample_points
 
     @property
     def times(self):
