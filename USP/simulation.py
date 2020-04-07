@@ -301,13 +301,16 @@ class Simulation:
         p_z_std = np.std(ps_T[2])
         return np.array([p_x_std, p_y_std, p_z_std])
 
-    def pickle(self, filename):
+    def pickle(self, filename=None):
         """
         Save the simulation object as a pickle.
 
         Args:
-        filename: the path at which to store the pickle file
+        filename: the path at which to store the pickle file, default None, in
+        which case use time
         """
+        if filename is None:
+            filename = time.strftime("%Y-%m-%d--%H-%M-%S.pickle")
         with open(filename, 'wb') as f:
             pickle.dump(self, f)
 
