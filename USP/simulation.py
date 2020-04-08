@@ -306,17 +306,22 @@ class Simulation:
         p_z_std = np.std(ps_T[2])
         return np.array([p_x_std, p_y_std, p_z_std])
 
-    def pickle(self, filename=None):
+    def pickle(self, path=None, prepend_path=''):
         """
         Save the simulation object as a pickle.
 
         Args:
-        filename: the path at which to store the pickle file, default None, in
+        path: the path at which to store the pickle file, default None, in
         which case use time
+        prepend_path: string to prepend to the path (e.g. for adding a
+        directory but using the datetime as the filename)
         """
-        if filename is None:
-            filename = time.strftime("%Y-%m-%d--%H-%M-%S.pickle")
-        with open(filename, 'wb') as f:
+        if path is None:
+            path = time.strftime("%Y-%m-%d--%H-%M-%S.pickle")
+        else:
+            path = str(path)
+        path = prepend_path + path
+        with open(path, 'wb') as f:
             pickle.dump(self, f)
 
     def run(self):
