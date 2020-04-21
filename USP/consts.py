@@ -28,3 +28,6 @@ k_B = 1.38E-23
 
 # Bohr Magneton
 u_B = 9.27E-24
+
+# Permeability of free space (SI)
+u_0 = 1.2566E-6
