@@ -6,3 +6,5 @@ htmlcov/
 output/
 *.pickle
 results/
+*.ipynb
+.ipynb_checkpoints/
