@@ -8,3 +8,4 @@ output/
 results/
 *.ipynb
 .ipynb_checkpoints/
+runscript.py
