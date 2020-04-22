@@ -48,7 +48,33 @@ class AbstractParameterProfile:
         """
         return self.value(t)
 
+class ArrayParameter(AbstractParameterProfile):
+    """
+    Parameter that returns an array rather than float or int. Takes a list of
+    parameters (or 0) to construct.
+    """
 
+    def __init__(self, param_list):
+        """
+        Take a list of parameters or constants and save as a list of parameter
+        types
+        """
+        self._params = []
+        for param in param_list:
+            if type(param) in [int, float, np.float]:
+                param = ConstantParameter(param)
+            elif not isinstance(param, AbstractParameterProfile):
+                raise ValueError('Expected a parameter, or something castable \
+                        to a constant parameter.')
+            self._params.append(param)
+
+    def value(self, t):
+        """
+        Get the parameter value at t for each member of params list
+        """
+        return [param(t) for param in self._params]
+
+                
 class ConstantParameter(AbstractParameterProfile):
     """
     Profile of a parameter that is constant through time
