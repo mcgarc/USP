@@ -44,43 +44,6 @@ class AbstractTrap:
         """
         return np.linalg.norm(self.field(t, r))
 
-    def plot_potential_cut(
-            self,
-            t,
-            x_start,
-            x_end,
-            direction,
-            points=100,
-            cut_point=[0, 0, 0],
-            output_path=None,
-            figsize=figs.DEFAULT_FIGSIZE,
-            dpi=figs.DEFAULT_DPI
-            ):
-        """
-        Plot a cut through of the potential along specified direction.
-        """
-        r = utils.clean_vector(cut_point)
-        direction, dir_label = utils.clean_direction_index(
-                direction,
-                str_rep=True
-                )
-        x_data = np.linspace(x_start, x_end, num=points)
-        y_data = []
-        for point in x_data:
-            r[direction] = point
-            y_data.append(self.potential(t, r))
-        y_data = np.array(y_data)
-        utils.plot_2D_line(
-            x_data,
-            y_data,
-            f'Trap potential cut through {dir_label}',
-            f'{dir_label} (m)',
-            'potential (J)',
-            figsize,
-            dpi,
-            output_path
-            )
-
 class FieldTrap(AbstractTrap):
     """
     A trap that uses field method defined externally (e.g. can take a
