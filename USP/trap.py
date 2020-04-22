@@ -257,15 +257,11 @@ class SuperimposeTrapWBias(AbstractTrap):
     TODO: Allow specification of other coordinates
     """
 
-    def __init__(self, traps, height, bias_scale=[1,1,1]):
+    def __init__(self, traps, center_position, bias_scale=[1,1,1]):
         """
         Takes the list of all traps to sum over
         """
-        if not isinstance(height, parameter.AbstractParameterProfile):
-            raise ValueError(
-                'ClusterTrap must have argument height of type AbstractParameterProfile'
-                )
-        self.height = height
+        self._center_position = center_position # TODO: check input is vec param
         self._traps = traps
         self._bias_scale = np.array(bias_scale)
 
@@ -280,7 +276,7 @@ class SuperimposeTrapWBias(AbstractTrap):
         """
         Bias field cancels the trapping field at specified height
         """
-        r = [0, 3E-3, self.height(t)]
+        r = self._center_position(t)
         bias_field = -1 * self._unbiased_field(t, r)
         return bias_field * self._bias_scale
     
