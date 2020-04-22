@@ -152,16 +152,16 @@ class ClusterTrapStatic(AbstractTrap):
     Create a trap based on a wire cluster and a static bias field.
     """
 
-    def __init__(self, cluster, bias):
+    def __init__(self, cluster, bias=[0,0,0]):
         if not isinstance(cluster, WireCluster):
             raise ValueError(
                 'ClusterTrap must have argument cluster of type WireCluster'
                 )
-
         if not isinstance(bias, StaticField):
-            raise ValueError(
-                'ClusterTrap argument bias must be None or of type StaticField'
-                )
+            # TODO handle non-lists properly
+            # Try converting an array to bias
+            bias = utils.clean_vector(bias)
+            bias = StaticField(bias)
         self.cluster = cluster
         self.bias = bias
         
@@ -232,6 +232,8 @@ class ClusterTrap(AbstractTrap):
 
 class SuperimposeTrap(AbstractTrap):
     """
+    Takes a list of traps as an argument. Returns the field of all traps
+    superimposed
     """
 
     def __init__(self, traps):
@@ -246,3 +248,45 @@ class SuperimposeTrap(AbstractTrap):
         """
         field_comps = [trap.field(t, r) for trap in self._traps]
         return np.array(sum(field_comps))
+
+class SuperimposeTrapWBias(AbstractTrap):
+    """
+    Takes a list of traps and then applies a bias field to trap at a specified
+    height above x=y=0
+
+    TODO: Allow specification of other coordinates
+    """
+
+    def __init__(self, traps, height, bias_scale=[1,1,1]):
+        """
+        Takes the list of all traps to sum over
+        """
+        if not isinstance(height, parameter.AbstractParameterProfile):
+            raise ValueError(
+                'ClusterTrap must have argument height of type AbstractParameterProfile'
+                )
+        self.height = height
+        self._traps = traps
+        self._bias_scale = np.array(bias_scale)
+
+    def _unbiased_field(self, t, r):
+        """
+        Sum fields for all unbiased traps
+        """
+        field_comps = [trap.field(t, r) for trap in self._traps]
+        return np.array(sum(field_comps))
+
+    def bias_field(self, t):
+        """
+        Bias field cancels the trapping field at specified height
+        """
+        r = [0, 3E-3, self.height(t)]
+        bias_field = -1 * self._unbiased_field(t, r)
+        return bias_field * self._bias_scale
+    
+    def field(self, t, r):
+        """
+        Return the trap field at position r and time t. Overrides superclass
+        abstract method
+        """
+        return self._unbiased_field(t, r) + self.bias_field(t)
