@@ -9,3 +9,7 @@ results/
 *.ipynb
 .ipynb_checkpoints/
 runscript.py
+
+# My workflow
+runscript.py
+meetings/

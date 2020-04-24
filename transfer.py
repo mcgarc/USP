@@ -10,7 +10,7 @@ def main():
 
     # Save script file with results
     with open(__file__, 'r') as f:
-        copy_script_path = f'runscipt.py'
+        copy_script_path = f'runscript.py'
         with open(copy_script_path, 'w') as f_out:
             for line in f:
                 f_out.write(line)
