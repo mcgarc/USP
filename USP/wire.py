@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.constants as spc
 
-from USP.parameter import AbstractParameterProfile
+from USP.parameter import AbstractParameterProfile, ConstantParameter
 from . import utils
 
 class WireSegment:
@@ -59,11 +59,19 @@ class WireSegment:
         self._end = self._clean_vector(end)
 
     def set_current(self, current):
-        if not isinstance(current, AbstractParameterProfile):
-            warn = 'Current must inherit from current.AbstractParameterProfile'
-            raise ValueError(warn)
-        else:
+        """
+        If the current is already a parameter then set it, otherwise attempt to
+        convert a float-castable to constant parameter.
+        """
+        if isinstance(current, AbstractParameterProfile):
             self._current = current
+        else:
+            try:
+                current = float(current)
+            except ValueError:
+                warn = 'Current must be parameter or castable to float'
+                raise ValueError(warn)
+            self._current = ConstantParameter(current)
 
     def field(self, t, r):
         """
