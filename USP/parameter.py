@@ -6,9 +6,14 @@ License, either version 3 of the license or any later version.
 
 Author: Cameron McGarry, 2020
 
+Functions:
+clean_parameter
+clean_array_parameter
+
 Classes:
 
 AbstractParameterProfile
+ArrayParameter
 ConstantParameter
 StepParameter
 RampParameter
@@ -16,6 +21,29 @@ RampParameter
 
 import warnings
 import numpy as np
+
+def clean_parameter(param):
+    """
+    Takes an argument and ensures it is a USP parameter. Constants are
+    converted to ConstantParameter
+    """
+    if np.isscalar(param):
+        param = ConstantParameter(param)
+    elif not isinstance(param, AbstractParameterProfile):
+        raise ValueError('Expected a parameter, or something castable \
+                to a constant parameter.')
+    return param
+
+
+def clean_array_parameter(array):
+    """
+    Takes an array-like or array parameter and returns an ArrayParameter
+    object.
+    """
+    if isisntance(array, ArrayParameter):
+        return array
+    else:
+        return ArrayParameter(array)
 
 
 class AbstractParameterProfile:
@@ -61,11 +89,7 @@ class ArrayParameter(AbstractParameterProfile):
         """
         self._params = []
         for param in param_list:
-            if type(param) in [int, float, np.float]:
-                param = ConstantParameter(param)
-            elif not isinstance(param, AbstractParameterProfile):
-                raise ValueError('Expected a parameter, or something castable \
-                        to a constant parameter.')
+            param = clean_parameter(param)
             self._params.append(param)
 
     def value(self, t):
