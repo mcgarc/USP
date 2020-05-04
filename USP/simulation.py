@@ -37,6 +37,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 
 
+
 def _integ(particle, potential, events):
     """
     Call init_integ of a passed mol. For parallelisation
@@ -53,6 +54,7 @@ def load_pickle(filename):
     """
     with open(filename, 'rb') as f:
         return pickle.load(f)
+
 
 class Simulation:
     """
@@ -380,11 +382,8 @@ class Simulation:
             self,
             particle_no,
             mass,
-            r_sigma,
-            v_sigma,
-            r_centre=[0, 0, 0],
-            v_centre=[0, 0, 0],
-            seed=None
+            r_generator,
+            v_generator
             ):
         """
         Create particles for simulation.
@@ -392,51 +391,26 @@ class Simulation:
         Args:
         particle_no: int
         mass: float
-        r_sigma: std for particle position distribution
-        v_sigma: std for particle velocity distribution
-        r_centre: where to centre positions (default origin)
-        v_centre: where to centre velocities (default origin)
-        seed: if not None, sets the numpy seed
+        r_generator: generate random positions
+        v_generator: generate random velocities
 
         Output:
         None, populates self._particles
         """
 
+
         self._mass = mass  # Save for use in temperature calculations see TODO
-
-        if seed is not None:
-            np.seed(seed)
-
-        # Clean sigma input into np arrays of length 3
-        if type(r_sigma) in [float, int, np.float64]:
-            r_sigma = [r_sigma, r_sigma, r_sigma]
-        if type(v_sigma) in [float, int, np.float64]:
-            v_sigma = [v_sigma, v_sigma, v_sigma]
-        r_sigma = utils.clean_vector(r_sigma)
-        v_sigma = utils.clean_vector(v_sigma)
-
-        # Clean centre inputs into np arrays of length 3
-        r_centre = utils.clean_vector(r_centre)
-        v_centre = utils.clean_vector(v_centre)
 
         # Generate particles
         self._particles = [
             particle.Particle(
-              [
-                  np.random.normal(r_centre[0], r_sigma[0]),
-                  np.random.normal(r_centre[1], r_sigma[1]),
-                  np.random.normal(r_centre[2], r_sigma[2])
-              ],
-              [
-                  np.random.normal(v_centre[0], v_sigma[0]),
-                  np.random.normal(v_centre[1], v_sigma[1]),
-                  np.random.normal(v_centre[2], v_sigma[2])
-              ],
-              mass,
-              self._t_0,
-              self._t_end,
-              self._dt,
-              self._sample_points
+                r_generator(),
+                v_generator(),
+                mass,
+                self._t_0,
+                self._t_end,
+                self._dt,
+                self._sample_points
               )
             for i in range(int(particle_no))
             ]

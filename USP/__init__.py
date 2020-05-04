@@ -8,3 +8,4 @@ from . import wire
 from . import simulation
 from . import events
 from . import figs
+from . import rand
