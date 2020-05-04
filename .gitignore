@@ -13,3 +13,4 @@ runscript.py
 # My workflow
 runscript.py
 meetings/
+*_results/
