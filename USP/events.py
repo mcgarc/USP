@@ -9,7 +9,7 @@ Author: Cameron McGarry, 2020
 Classes:
 
 AbstractEvent: Abstract class to fomat later events
-OutOfRangeBox: Event describing loss by a limit along each cardinal direction
+OutOfRangeSphere: Event describing loss outside of a sphere
 """
 
 import numpy as np
@@ -35,9 +35,10 @@ class AbstractEvent:
         """
         self._is_terminal = terminal
 
-    def __call__(self, t, state, **kwargs):
+    def event(self, t, state):
         """
-        Calling an event returns 0 if the event has taken place.
+        Check if the event has occurred. Should return 0 if so. To be
+        implemented by subclasses
 
         Args:
         t: time
@@ -46,6 +47,18 @@ class AbstractEvent:
         """
         raise NotImplementedError
 
+    def __call__(self, t, state, **kwargs):
+        """
+        Alias event method by with a call to the object for use with Desolver.
+        Accept arbitrary kwargs for compatibility.
+
+        Args:
+        t: time
+        state: Desolver state (anticipate 6-array of position and speed)
+        unknown kwags
+        """
+        return self.event(t, state)
+
     @property
     def is_terminal(self):
         """
@@ -53,71 +66,7 @@ class AbstractEvent:
         """
         return self._is_terminal
 
-
-class OutOfRangeBox(AbstractEvent):
-    """
-    Event determining if a particle has exceeded a given limit in any of the
-    cardinal directions. i.e. If it has left the cube surrounding a specified
-    centre point, with edge length 2*limit
-    """
-
-    def __init__(self, limit, center=[0, 0, 0], terminal=True):
-        """
-        Constructor for OutOfRangeBox
-
-        Args:
-        limit: float, distance a particle can travel in any cardinal direction
-        before terminating
-        center: the position from which to evaluate this distance
-        terminal: bool, whether triggering the event should terminate the
-        integration (default True)
-        """
-        super().__init__(terminal)
-        if type(limit) in [int, float]:
-            self._limit = [limit, limit, limit]
-        else:
-            # TODO Proper type checking here
-            self._limit = limit
-        self._center = np.array(center).astype(float)
-
-    def __call__(self, t, state, **kwargs):
-        """
-        Calling an event returns 0 if the particle has left the box
-
-        Args:
-        t: time
-        state: Desolver state (anticipate 6-array of position and speed)
-        unknown kwags
-        """
-        r = state[:3]
-        v = state[3:]
-        for i in range(3):
-            if abs(r[i] - self._center[i]) > self._limit[i]:
-                return 0
-        return 1
-
-class OutOfRangeSphere(OutOfRangeBox):
-    """
-    Event determining if a particle has exceeded a given limit from the centre.
-    i.e. If it has left the sphere sourrounding the centre with radius limit
-    """
-
-    def __call__(self, t, state, **kwargs):
-        """
-        Calling an event returns 0 if the particle has left the sphere
-
-        Args:
-        t: time
-        state: Desolver state (anticipate 6-array of position and speed)
-        unknown kwags
-        """
-        r = np.array(state[:3])
-        if np.linalg.norm(r - self._center) > self._limit:
-            return 0
-        else:
-            return 1
-
-class OutOfRangeSphereTranslate(OutOfRangeBox):
+class OutOfRangeSphere(AbstractEvent):
     """
     Event determining if a particle has exceeded a given limit from the centre.
     The centre of the sphere translates through time according to a given
@@ -127,9 +76,7 @@ class OutOfRangeSphereTranslate(OutOfRangeBox):
     def __init__(
             self,
             limit,
-            param,
-            direction=0,
-            center=[0, 0, 0],
+            center,
             terminal=True
             ):
         """
@@ -138,18 +85,14 @@ class OutOfRangeSphereTranslate(OutOfRangeBox):
         Args:
         limit: float, distance a particle can travel in any cardinal direction
         before terminating
-        param: USP.parameter object, determines position along `direction` axis
-        direction: str or int, represents the (cardinal) direction of
-        translation
-        center: the position from which to evaluate this distance
+        center: array parameter giving the cetner at a certain time
         terminal: bool, whether triggering the event should terminate the
         integration (default True)
         """
-        super().__init__(limit, center, terminal)
-        self._direction = utils.clean_direction_index(direction)
-        self._param = param
+        self._limit = limit
+        self._center = center
 
-    def __call__(self, t, state, **kwargs):
+    def event(self, t, state, **kwargs):
         """
         Calling an event returns 0 if the particle has left the sphere
 
@@ -158,10 +101,8 @@ class OutOfRangeSphereTranslate(OutOfRangeBox):
         state: Desolver state (anticipate 6-array of position and speed)
         unknown kwags
         """
-        r_0 = self._center.copy()
-        r_0[self._direction] = self._param.value(t)
+        r_0 = self._center(t).copy()
         r = np.array(state[:3])
-            #print(r, r_0, r-r_0, self._param.value(t))
         if np.linalg.norm(r - r_0) > self._limit:
             return 0
         else:
