@@ -89,6 +89,7 @@ class OutOfRangeSphere(AbstractEvent):
         terminal: bool, whether triggering the event should terminate the
         integration (default True)
         """
+        super().__init__(terminal)
         self._limit = limit
         self._center = center
 
@@ -105,5 +106,3 @@ class OutOfRangeSphere(AbstractEvent):
         r = np.array(state[:3])
         if np.linalg.norm(r - r_0) > self._limit:
             return 0
-        else:
-            return 1
