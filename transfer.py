@@ -48,16 +48,19 @@ def main():
     v_spread = np.sqrt(2*consts.k_B*T/mass)
 
     # Particle loss
-    limit = 100E-3
-    loss_event = events.OutOfRangeBox(limit, center=[0, 0, z_0])
+    limit = 2E-3
+    loss_event = events.OutOfRangeSphere(limit, center)
+
+    # Particle generators
+    r_gen = rand.NormalGenerator([0, y_0, z_0], 3 * [r_spread])
+    v_gen = rand.NormalGenerator(0, v_spread, length=3)
 
     # Simulation
     POINTS = 200
     t_0 = 0
-    t_end = 500E-3
+    t_end = 50E-3
     dt = 1E-6
-    PARTICLES = 20
-    r_centre = [0., y_0, z_0]
+    PARTICLES = 100
     sim = simulation.Simulation(
             combi_trap,
             t_0,
@@ -67,7 +70,7 @@ def main():
             events=loss_event,
             process_no=48
             )
-    sim.init_particles(PARTICLES, mass, r_spread, v_spread, r_centre=r_centre)
+    sim.init_particles(PARTICLES, mass, r_gen, v_gen)
 
     sim.run()
 
