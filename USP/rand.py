@@ -10,17 +10,20 @@ class Generator:
 
 class UniformGenerator(Generator):
 
-    def __init__(low, high, length):
+    def __init__(self, low, high, length=1):
         self._low = low
         self._high = high
-        self._length = length
-        # TODO check center and spread correspond in dimension
         self._scalar = np.isscalar(low)
+        if self._scalar:
+            self._length = length
+        else:
+            # TODO check low and high correspond in dimension
+            self._length = len(self._low)
 
 
     def generate(self):
         if self._scalar:
-            return np.random.uniform(low, high, length)
+            return np.random.uniform(self._low, self._high, self._length)
         else:
             result = [np.random.uniform(self._low[i], self._high[i])
                     for i in range(self._length)]
