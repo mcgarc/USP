@@ -193,7 +193,7 @@ class ClusterTrap(AbstractTrap):
     TODO: Allow specification of other coordinates
     """
 
-    def __init__(self, cluster, height, bias_scale=[0, 0, 0]):
+    def __init__(self, cluster, height, bias_scale=[1, 1, 1]):
         """
         """
         if not isinstance(cluster, WireCluster):
