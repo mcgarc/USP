@@ -106,3 +106,4 @@ class OutOfRangeSphere(AbstractEvent):
         r = np.array(state[:3])
         if np.linalg.norm(r - r_0) > self._limit:
             return 0
+        return 1
