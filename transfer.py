@@ -19,27 +19,35 @@ def main():
 
     # Initialise U wire
     # Thick wire should be able to take 100A
-    I = 100 * consts.u_B
-    I = parameter.RampParameter([I], [100E-3, 200E-3, 100, 200])
+    I_u1_0 = 100 * consts.u_B
+    I_u1_1 = 100 * consts.u_B
+    I_u1 = parameter.RampParameter([I_u1_0, I_u1_1], [100E-3, 200E-3, 300E-3, 500E-3, 600E-3, 700E-3])
     u_axis = 10E-3
     y_0 = 2E-3
     y_1 = 0
-    y = parameter.SigmoidParameter(y_0, y_1, 100E-3, 200E-3, 50)
+    y = parameter.SigmoidParameter(y_0, y_1, 120E-3, 180E-3, 50)
     z_0 = 3E-3
     z_1 = .5E-3
-    z = parameter.SigmoidParameter(z_0, z_1, 300E-3, 400E-3, 50)
-    u_wire = wire.UWire(I, u_axis)
+    z = parameter.SigmoidParameter(z_0, z_1, 320E-3, 480E-3, 50)
+    u_wire = wire.UWire(I_u1, u_axis)
     u_trap = trap.ClusterTrapStatic(u_wire)
-
+    
     # Initialise QP
     b_1_0 = consts.u_B * .6
     b_1 = parameter.RampParameter([b_1_0], [-1, 0, 100E-3, 200E-3])
     qp = field.QuadrupoleField(b_1, r_0=[0, y_0, z_0])
     qp_trap = trap.FieldTrap(qp.field)
-
+    
+    # Initialise Z wire
+    z_axis = 3E-3 # 3mm as per chip design
+    I_z1_0 = 1 * consts.u_B
+    I_z1 = parameter.RampParameter([I_z1_0], [600E-3, 700E-3, 800E-3, 1000E-3])
+    z_wire_1 = wire.ZWire(I_z1, z_axis)
+    z_trap_1 = trap.ClusterTrapStatic(z_wire_1)
+    
     # Combination trap
     center = parameter.ArrayParameter([0, y, z])
-    combi_trap = trap.SuperimposeTrapWBias([qp_trap, u_trap], center)
+    combi_trap = trap.SuperimposeTrapWBias([qp_trap, u_trap, z_trap_1], center)
 
     # Initial conditions
     T = 50E-6
