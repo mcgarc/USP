@@ -370,8 +370,15 @@ class Simulation:
 
         # Multiprocessing
         start_time = time.time()
-        with mp.Pool(process_no) as p:
-            self._particles = p.starmap(_integ, args)
+        multiprocessing_flag = True # TODO Enable turning this to False
+        if multiprocessing_flag:
+            with mp.Pool(process_no) as p:
+                self._particles = p.starmap(_integ, args)
+        else:
+            self._particles = [
+                    p.integ(self._trap.potential, events=self._events)
+                    for p in self._particles
+                    ]
         self.run_time = time.time() - start_time
 
         print(f'Complete, runtime: {self.run_time:.3f}')
