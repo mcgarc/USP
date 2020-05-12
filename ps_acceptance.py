@@ -42,25 +42,25 @@ def main():
     trap = u_trap()
 
     # Initial conditions
-    T = 600E-6
+    T = 6E-3
     mass = consts.m_CaF
     r_spread = 5E-3
     
     # Particle generators
-    r_gen = rand.UniformGenerator([-10E-3, -10E-3, 1E-9], [10E-3, 10E-3, 20E-3])
+    r_gen = rand.UniformGenerator([-6E-3, -5E-3, 2E-3], [6E-3, 5E-3, 8E-3])
     v_gen = rand.TemperatureGenerator(mass, T, length=3)
 
     # Particle loss
-    limit = 5E-3
+    limit = 20E-3
     center = parameter.ArrayParameter([0, 0, z_0])
     loss_event = events.OutOfRangeSphere(limit, center=center)
 
     # Simulation
-    POINTS = 200
+    POINTS = 10
     t_0 = 0
-    t_end = 1E-6
+    t_end = 200E-3
     dt = 1E-6
-    PARTICLES = 10000
+    PARTICLES = 1E5
     sim = simulation.Simulation(
             trap,
             t_0,
@@ -74,7 +74,7 @@ def main():
 
     sim.run()
 
-    sim.pickle(prepend_path='psa_results/')
+    sim.pickle(path='output.pickle')
 
 
 if __name__ == '__main__':
