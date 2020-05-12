@@ -68,7 +68,7 @@ def main():
     t_0 = 0
     t_end = 50E-3
     dt = 1E-6
-    PARTICLES = 100
+    PARTICLES = 50
     sim = simulation.Simulation(
             combi_trap,
             t_0,
