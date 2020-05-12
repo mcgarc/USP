@@ -18,7 +18,7 @@ clean_direction_index
 import numpy as np
 import csv
 
-DX = 1E-6
+DX = 1E-10
 
 def clean_vector(vector, length=3, cast_type=None):
     """
