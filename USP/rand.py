@@ -52,3 +52,37 @@ class NormalGenerator(Generator):
                     in range(self._length)
                     ]
             return np.array(result)
+
+class TemperatureGenerator(UniformGenerator):
+    """
+    Takes input in temperature and creates a unifrom distribution in
+    temperature space, but output is in m/s for direct input to
+    Simulation.init_particles
+    """
+
+    def __init__(self, mass, low, high=None, length=1):
+        """
+        Initialise temperature generator. If only lower bound is supplied then
+        take this to be the (negative of) upper (lower) bound.
+        args:
+        mass: mass of particle in kg
+        low: the lower bound, or if high is None, half the spread about zero
+        (in Kelvin)
+        high: the upper bound (in Kelvin)
+        length: the size of the array to generate
+        """
+        self._mass = mass # Required to convert to temperature
+        if high is None:
+            high = low
+            low = -low
+        super().__init__(low, high, length)
+
+    def generate(self):
+        """
+        Generate in temperature space, but convert output into m/s for
+        convenience. This means that the distribution is still uniform over
+        temperature
+        """
+        temp = super().generate()
+        vel = np.sqrt(2 * consts.k_B * temp / self._mass)
+        return vel
