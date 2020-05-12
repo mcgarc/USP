@@ -1,4 +1,5 @@
 import numpy as np
+from USP import consts
 
 class Generator:
 
@@ -73,8 +74,8 @@ class TemperatureGenerator(UniformGenerator):
         """
         self._mass = mass # Required to convert to temperature
         if high is None:
-            high = low
-            low = -low
+            high = abs(low)
+            low = -abs(low)
         super().__init__(low, high, length)
 
     def generate(self):
@@ -84,5 +85,7 @@ class TemperatureGenerator(UniformGenerator):
         temperature
         """
         temp = super().generate()
-        vel = np.sqrt(2 * consts.k_B * temp / self._mass)
+        vel = np.sqrt(2 * consts.k_B * np.abs(temp) / self._mass)
+        # Keep signs
+        vel = vel * np.sign(temp)
         return vel
