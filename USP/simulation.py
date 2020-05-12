@@ -40,9 +40,15 @@ import matplotlib.animation as animation
 
 def _integ(particle, potential, events):
     """
-    Call init_integ of a passed mol. For parallelisation
+    Call init_integ of a passed mol. For parallelisation and handling
+    integration errors
     """
-    particle.integ(potential, events=events)
+    try:
+        particle.integ(potential, events=events)
+    except Exception as e:
+        particle._terminate(particle._t_0)
+        print(f'Integration did note complete for a particle starting at {particle.Q(particle._t_0)}')
+        print(e)
     return particle
 
 def load_pickle(filename):
@@ -424,6 +430,12 @@ class Simulation:
 
         # Save no. of particles for reference
         self._N_particles = particle_no
+
+    def clean_particles(self):
+        """
+        Remove any particles without integrators
+        """
+        self._particles = [p for p in self.particles if p._result is not None]
 
     def get_total_energy(self, t):
         """
