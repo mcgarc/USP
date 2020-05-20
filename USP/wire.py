@@ -158,20 +158,36 @@ class ZWire(WireCluster):
     A WireCluster forming a single Z wire trap
     """
 
-    def __init__(self, current, axial_length, end_length=5e2):
+    def __init__(self, current, axial_length, end_length=5e2, center=[0,0,0]):
         axial_length = float(axial_length)
         end_length = float(end_length)
         wires = self.create_wires(current, axial_length, end_length)
         self.set_wires(wires)
+        self._center = utils.clean_vector(center)
         # TODO Orientation
-        # TODO Position (including height)
 
     def create_wires(self, current, axial_length, end_length):
         al = axial_length
         el = end_length
-        end_left = WireSegment(current, [-el, -al/2, 0], [0, -al/2, 0])
-        axis = WireSegment(current, [0, -al/2, 0], [0, al/2, 0])
-        end_right = WireSegment(current, [0, al/2, 0], [el , al/2, 0])
+        x, y, h = self._center
+        end_left = WireSegment(current, [x-el, y-al/2, h], [x, y-al/2, h])
+        axis = WireSegment(current, [x, y-al/2, h], [x, y+al/2, h])
+        end_right = WireSegment(current, [x, y+al/2, h], [x+el, y+al/2, h])
+        return [end_left, axis, end_right]
+
+class ZWireXAxis(ZWire):
+    """
+    ZWire but oriented with axis along x direction
+    TODO: Replace with orientation for ZWire
+    """
+
+    def create_wires(self, current, axial_length, end_length):
+        al = axial_length
+        el = end_length
+        x, y, h = self._center
+        end_left = WireSegment(current, [x-al/2, y-el, h], [x-al/2, y, h])
+        axis = WireSegment(current, [x-al/2, y, h], [x+al/2, y, h])
+        end_right = WireSegment(current, [x+al/2, y, h], [x+al/2, y+el, h])
         return [end_left, axis, end_right]
 
 class UWire(ZWire):
@@ -185,7 +201,8 @@ class UWire(ZWire):
         """
         al = axial_length
         el = end_length
-        end_left = WireSegment(current, [-al/2, -el, 0], [-al/2, 0, 0])
-        axis = WireSegment(current, [-al/2, 0, 0], [al/2, 0, 0])
-        end_right = WireSegment(current, [al/2, 0, 0], [al/2, -el, 0])
+        x, y, h = self._center
+        end_left = WireSegment(current, [x-al/2, y-el, h], [x-al/2, y, h])
+        axis = WireSegment(current, [x-al/2, y, h], [x+al/2, y, h])
+        end_right = WireSegment(current, [x+al/2, y, h], [x+al/2, y-el, h])
         return [end_left, axis, end_right]
