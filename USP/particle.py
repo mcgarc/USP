@@ -233,7 +233,7 @@ class Particle:
                 dt=self._dt,
                 constants={'potential': potential}
                 )
-        integ.set_method('RK45')
+        integ.set_method('SymplecticEulerSolver')
         integ.integrate(events=events)
         # Look for early completion by comparing last element of evaluation
         # times to desired end time. Use isclose because integ can be off by
