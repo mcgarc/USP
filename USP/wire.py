@@ -161,9 +161,9 @@ class ZWire(WireCluster):
     def __init__(self, current, axial_length, end_length=5e2, center=[0,0,0]):
         axial_length = float(axial_length)
         end_length = float(end_length)
+        self._center = utils.clean_vector(center)
         wires = self.create_wires(current, axial_length, end_length)
         self.set_wires(wires)
-        self._center = utils.clean_vector(center)
         # TODO Orientation
 
     def create_wires(self, current, axial_length, end_length):
