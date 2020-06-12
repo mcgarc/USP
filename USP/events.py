@@ -15,6 +15,7 @@ OutOfRangeSphere: Event describing loss outside of a sphere
 import numpy as np
 
 from . import utils
+from . import parameter
 
 
 class AbstractEvent:
@@ -91,7 +92,7 @@ class OutOfRangeSphere(AbstractEvent):
         """
         super().__init__(terminal)
         self._limit = limit
-        self._center = center
+        self._center = parameter.clean_array_parameter(center)
 
     def event(self, t, state, **kwargs):
         """

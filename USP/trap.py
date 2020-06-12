@@ -261,7 +261,7 @@ class SuperimposeTrapWBias(AbstractTrap):
         """
         Takes the list of all traps to sum over
         """
-        self._center_position = center_position # TODO: check input is vec param
+        self._center_position = parameter.clean_array_parameter(center_position)
         self._traps = traps
         self._bias_scale = np.array(bias_scale)
 

@@ -40,7 +40,7 @@ def clean_array_parameter(array):
     Takes an array-like or array parameter and returns an ArrayParameter
     object.
     """
-    if isisntance(array, ArrayParameter):
+    if isinstance(array, ArrayParameter):
         return array
     else:
         return ArrayParameter(array)
