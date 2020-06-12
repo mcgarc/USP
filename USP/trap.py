@@ -193,19 +193,15 @@ class ClusterTrap(AbstractTrap):
     TODO: Allow specification of other coordinates
     """
 
-    def __init__(self, cluster, height, bias_scale=[1, 1, 1]):
+    def __init__(self, cluster, trap_center, bias_scale=[1, 1, 1]):
         """
         """
         if not isinstance(cluster, WireCluster):
             raise ValueError(
                 'ClusterTrap must have argument cluster of type WireCluster'
                 )
-        if not isinstance(height, parameter.AbstractParameterProfile):
-            raise ValueError(
-                'ClusterTrap must have argument height of type AbstractParameterProfile'
-                )
         self._cluster = cluster
-        self._height = height
+        self._trap_center = parameter.clean_array_parameter(trap_center)
         self._bias_scale = np.array(bias_scale)
 
     @property
@@ -219,7 +215,7 @@ class ClusterTrap(AbstractTrap):
         """
         Bias field cancels the trapping field at specified height
         """
-        r = [0, 0, self.height(t)]
+        r = self._trap_center(t)
         bias_field = -1 * self.cluster.field(t, r)
         return bias_field * self._bias_scale
 
