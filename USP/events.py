@@ -108,3 +108,42 @@ class OutOfRangeSphere(AbstractEvent):
         if np.linalg.norm(r - r_0) > self._limit:
             return 0
         return 1
+
+class OutOfRangeBox(AbstractEvent):
+    """
+    Event that triggers if the particle leaves a predefined range
+    """
+
+    def __init__(
+            self,
+            x0,
+            y0, 
+            z0, 
+            x1,
+            y1, 
+            z1, 
+            terminal=True
+            ):
+        super().__init__(terminal)
+        self.x0 = x0 
+        self.y0 = y0  
+        self.z0 = z0  
+        self.x1 = x1 
+        self.y1 = y1  
+        self.z1 = z1  
+
+    def event(self, t, state, **kwargs):
+        """
+        Calling an event returns 0 if the particle has left the region
+
+        Args:
+        t: time
+        state: Desolver state (anticipate 6-array of position and speed)
+        unknown kwags
+        """
+        r = np.array(state[:3])
+        lower = r[0] < self.x1 or r[1] < self.y1 or r[2] < self.z1
+        upper = r[0] > self.x1 or r[1] > self.y1 or r[2] > self.z1
+        if upper or lower:
+            return 0
+        return 1
