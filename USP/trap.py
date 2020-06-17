@@ -172,6 +172,20 @@ class ClusterTrapStatic(AbstractTrap):
         """
         return self.cluster.field(t, r) + self.bias.field(t, r)
 
+class ClusterTrapDynamic(AbstractTrap):
+    """
+    Create a trap based on a wire cluster and a dynamic bias field (an array param)
+    """
+    
+    def __init__(self, cluster, bias):
+        # TODO Make the bias field a proper field type
+        self.bias = parameter.clean_array_parameter(bias)
+        # TODO Type check on cluster
+        self.cluster = cluster
+
+    def field(self, t, r):
+        return self.cluster.field(t, r) + self.bias(t)
+
 class ClusterTrapStaticTR(ClusterTrapStatic):
     """
     Create a trap based on a wire cluster and a static bias field, with the
