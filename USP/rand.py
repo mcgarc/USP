@@ -89,3 +89,29 @@ class TemperatureGenerator(UniformGenerator):
         # Keep signs
         vel = vel * np.sign(temp)
         return vel
+
+class TemperatureGeneratorNormal(Generator):
+    """
+    Takes input in temperature and creates a normal distribution in
+    temperature space, but output is in m/s for direct input to
+    Simulation.init_particles
+    """
+
+    def __init__(self, mass, temperature, length=1):
+        """
+        Initialise temperature generator. If only lower bound is supplied then
+        take this to be the (negative of) upper (lower) bound.
+        args:
+        mass: mass of particle in kg
+        low: the lower bound, or if high is None, half the spread about zero
+        (in Kelvin)
+        high: the upper bound (in Kelvin)
+        length: the size of the array to generate
+        """
+        self._mass = mass # Required to convert to temperature
+        # Generate a normal distribution corresponding to this temperature
+        self._temperature = temperature
+        self._spread = np.sqrt(consts.k_B*temperature / mass)
+
+    def generate(self):
+        return np.random.normal(0, self._spread, 3)
