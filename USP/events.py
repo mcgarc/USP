@@ -142,7 +142,7 @@ class OutOfRangeBox(AbstractEvent):
         unknown kwags
         """
         r = np.array(state[:3])
-        lower = r[0] < self.x1 or r[1] < self.y1 or r[2] < self.z1
+        lower = r[0] < self.x0 or r[1] < self.y0 or r[2] < self.z0
         upper = r[0] > self.x1 or r[1] > self.y1 or r[2] > self.z1
         if upper or lower:
             return 0
