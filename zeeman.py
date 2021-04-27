@@ -12,29 +12,30 @@ def main():
     # Initialise Zeeman guide
     z_guide = trap.ZeemanGuide()
 
+    # Particle generators
+    l = 1E-3
+    rsigma = 1E-3
+    T = 50E-6
+    vsigma = np.sqrt(2 * consts.k_B * np.abs(T) / consts.m_CaF)
+    vz = 144
+    r_gen = rand.NormalGenerator([0, 0, 3E-3], [rsigma, rsigma, rsigma])
+    v_gen = rand.NormalGenerator([0, 0, vz], [vsigma, vsigma, vsigma])
+
     # Simulation
     t_end = 10E-3
+    dt = 1E-5
+    samples = 100
     mass = consts.m_CaF
-    hole_diameter = 4E-3
-    r_spread = hole_diameter/4
     T = 4
     v_spread = np.sqrt(2*consts.k_B*T/mass)
     v_z = 144
-    sim = simulation.Simulation(z_guide, 0, t_end, 1E-6)
-    sim.init_particles(30, mass, r_spread, v_spread, v_centre=[0, 0, v_z])
-    sim.save_Q_to_csv(0, 'results/start_Q.csv')
+    sim = simulation.Simulation(z_guide, 0, t_end, dt, samples)
+    sim.init_particles(30, mass, r_gen, v_gen)
     sim.run()
-    sim.save_Q_to_csv(t_end, 'results/end_Q.csv')
 
     # Diagnosis
     print(sim.get_total_energy(0))
     print(sim.get_total_energy(t_end))
-
-    # Visualisation
-    sim.plot_start_end_positions()
-    xylim =0.005
-    sim.animate(500, xlim=(-xylim, xylim), ylim=(-xylim, xylim), zlim=(-0.2,2))
-            #, output_path='results/zeeman.mp4')
 
 if __name__ == '__main__':
     main()
