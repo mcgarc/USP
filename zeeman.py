@@ -33,9 +33,14 @@ def main():
     sim.init_particles(30, mass, r_gen, v_gen)
     sim.run()
 
-    # Diagnosis
-    print(sim.get_total_energy(0))
-    print(sim.get_total_energy(t_end))
+    # Check COE
+    print('Energy differential over simulation')
+    diff = sim.get_total_energy(0) - sim.get_total_energy(t_end)
+    diff /= sim.get_total_energy(0)
+    print(f'{diff:.3f}%')
+
+    # Output to pickle
+    sim.pickle('results/zeeman_example.pickle')
 
 if __name__ == '__main__':
     main()
