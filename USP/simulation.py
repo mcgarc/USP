@@ -32,11 +32,6 @@ from textwrap import dedent
 
 from sys import getsizeof
 
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.animation as animation
-
-
 
 def _integ(particle, potential, events):
     """
