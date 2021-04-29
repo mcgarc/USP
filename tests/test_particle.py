@@ -15,26 +15,19 @@ class TestParticle(unittest.TestCase):
         self.r = [0, 0, 0]
         self.v = [0, 0, 0]
         self.m = 1
-        self.particle = particle.Particle(self.r, self.v, self.m)
-
-    def setup_integ_test_trivial(self):
-        """
-        Basic quadrupole field trapping a single particle
-        """
-        t_end = 1
-        max_step = t_end/1000
-        qp = field.QuadrupoleField(1)
-        qp_trap = trap.FieldTrap(qp.field)
+        self.t_0 = 0
+        self.t_end = 1
+        self.dt = 1E-3
+        self.points = 1000
         self.particle = particle.Particle(
                 self.r,
                 self.v,
                 self.m,
-                0,
-                t_end,
-                max_step,
-                100
+                self.t_0,
+                self.t_end,
+                self.dt,
+                self.points
                 )
-        self.particle.integ(qp_trap.potential)
 
     def test_properties(self):
         self.assertEqual(self.m, self.particle.m)
@@ -71,14 +64,12 @@ class TestParticle(unittest.TestCase):
         """
         Test initialisation of the integrator for a simple potential
         """
-        self.assertIsNone(self.particle._result)
-        self.setup_integ_test_trivial()
-        self.assertIsNotNone(self.particle._result)
+        #
 
     def test_integ_trivial(self):
         """
         """
-        self.setup_integ_test_trivial()
+        pass
 
     def test_check_termination(self):
         """
