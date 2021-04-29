@@ -63,11 +63,11 @@ class WireInfiniteX(WireInfinite):
         # Vector from wire to point
         r[0] = 0
         r_prime = r - self._position
-        r_sqd = np.dot(r_prime, r_prime)
+        r_prime_sqd = np.dot(r_prime, r_prime)
         # Field direction
-        direction = np.array([0, -r_prime[2], r_prime[1]])
-        # Field vector
-        return (consts.u_0 * current / (2*np.pi*r_sqd)) * direction
+        field_direction = np.array([0, -r_prime[2], r_prime[1]])
+        field_mag_norm = consts.u_0 * current / (2*np.pi*r_prime_sqd)
+        return  field_mag_norm * field_direction
 
 class WireSegment:
     """
