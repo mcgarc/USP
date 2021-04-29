@@ -25,6 +25,10 @@ def clean_vector(vector, length=3, cast_type=None):
     Ensure a vector is of the right length and format before setting it
     """
     vector = np.array(vector)
+    try:
+        len(vector)
+    except TypeError:
+        raise ValueError('Passed vector has no size')
     if len(vector) != length:
         raise ValueError(f'Vector should have length {length}')
     if cast_type is not None:
