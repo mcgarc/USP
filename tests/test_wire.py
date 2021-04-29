@@ -61,7 +61,19 @@ class TestInfiniteWireMethods(unittest.TestCase):
                 x_wire_1.field(0, r),
                 expected_mag * expected_direction
                 )
-
+    def test_x_wire_moved(self):
+        """
+        Test wire not on the x axis
+        """
+        x_wire = wire.WireInfiniteX(1, [0, 1, 1])
+        expected_mag = consts.u_0 / (2 * np.pi * np.sqrt(2))
+        # In y and z
+        r = np.array([0, 0, 0])
+        expected_direction = np.array([0, 1, -1]) / np.sqrt(2)
+        np.testing.assert_array_almost_equal(
+                x_wire.field(0, r),
+                expected_mag * expected_direction
+                )
 
 
 class TestWireSegmentMethods(unittest.TestCase):
