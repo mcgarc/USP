@@ -42,14 +42,10 @@ class TestWireSegmentMethods(unittest.TestCase):
 
     def test_set_current(self):
         """
-        Cannot set int as current (must be of type AbstractParameterProfile)
+        Int is cast to abstract current type
         """
-        with self.assertRaises(ValueError):
-            self.wire.set_current(1)
-        cur = 5
-        new_current = parameter.ConstantParameter(cur)
-        self.wire.set_current(new_current)
-        self.assertEqual(self.wire.current.value(0), cur)
+        self.wire.set_current(1)
+        self.assertEqual(self.wire.current.value(0), 1)
 
     def test_field_simple(self):
         """
