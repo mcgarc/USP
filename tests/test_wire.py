@@ -53,14 +53,14 @@ class TestInfiniteWireMethods(unittest.TestCase):
                 x_wire_1.field(0, r),
                 expected_mag * expected_direction
                 )
-#        # 2 units away
-#        r = np.array([0, 0, -2])
-#        expected_mag/=np.sqrt(2)
-#        expected_direction = np.array([0, 1, 0])
-#        np.testing.assert_array_equal(
-#                x_wire_1.field(0, r),
-#                expected_mag * expected_direction
-#                )
+        # 2 units away
+        r = np.array([0, 0, -2])
+        expected_mag/=np.sqrt(2)
+        expected_direction = np.array([0, 1, 0])
+        np.testing.assert_array_equal(
+                x_wire_1.field(0, r),
+                expected_mag * expected_direction
+                )
 
 
 
