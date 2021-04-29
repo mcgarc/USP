@@ -14,6 +14,16 @@ class TestInfiniteWireMethods(unittest.TestCase):
     # TODO
     # Test direction
     # Test current setting
+    # Test divide by zero (what is expected behaivour?)
+    # Test arbitrary direction field (when implemented)
+
+    def test_inf_wire_no_dir(self):
+        """
+        Testing of an infinite wire where no direction is specified
+        """
+        inf_wire = wire.WireInfinite(1, [0, 0, 0], None)
+        with self.assertRaises(NotImplementedError):
+            inf_wire.field(0, [0,0,0])
 
     def test_x_wire_field(self):
         """
