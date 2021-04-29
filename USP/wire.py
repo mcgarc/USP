@@ -2,7 +2,72 @@ import numpy as np
 import scipy.constants as spc
 
 from USP.parameter import AbstractParameterProfile, ConstantParameter
+from USP import consts
 from . import utils
+
+def clean_current(current):
+    """
+    If the current is already a parameter then set it, otherwise attempt to
+    convert a float-castable to constant parameter.
+    """
+    if isinstance(current, AbstractParameterProfile):
+        return current
+    else:
+        try:
+            current = float(current)
+        except ValueError:
+            warn = 'Current must be parameter or castable to float'
+            raise ValueError(warn)
+        current = ConstantParameter(current)
+        return current
+
+class WireInfinite:
+    """
+    Simulates an unphysical wire of infinite length. Superclass for
+    WireInfinite[Direction]
+    """
+    def __init__(self, current, position, direction=None):
+        self.set_current(current)
+        self._position = utils.clean_vector(position, 3) # TODO setter
+        if direction is not None:
+            raise NotImplemented
+            # TODO Generalised direction that doesn't slow simple versions
+        else:
+            self._direction = None
+
+    def set_current(self, current):
+        self._current = clean_current(current)
+
+    def field(self, t, r):
+        """
+        Infinite wire fields where direction is not specified here should be
+        implemented by a subclass. Otherwise calculate the field directly
+        """
+        if self._direction is None:
+            # Expect a direction or an overloaded field from subclass
+            raise NotImplementedError
+        else:
+            raise NotImplemented # TODO
+
+class WireInfiniteX(WireInfinite):
+    """
+    Infinite wire parallel to X
+    """
+
+    def __init__(self, current, position):
+        super().__init__(current, position, None)
+        self._position[0] = 0
+
+    def field(self, t, r):
+        current = self._current.value(t)
+        # Vector from wire to point
+        r[0] = 0
+        r_prime = r - self._position
+        r_sqd = np.dot(r_prime, r_prime)
+        # Field direction
+        direction = np.array([0, -r_prime[2], r_prime[1]])
+        # Field vector
+        return (consts.u_0 * current / (2*np.pi*r_sqd)) * direction
 
 class WireSegment:
     """
@@ -59,19 +124,7 @@ class WireSegment:
         self._end = self._clean_vector(end)
 
     def set_current(self, current):
-        """
-        If the current is already a parameter then set it, otherwise attempt to
-        convert a float-castable to constant parameter.
-        """
-        if isinstance(current, AbstractParameterProfile):
-            self._current = current
-        else:
-            try:
-                current = float(current)
-            except ValueError:
-                warn = 'Current must be parameter or castable to float'
-                raise ValueError(warn)
-            self._current = ConstantParameter(current)
+        self._current = clean_current(current)
 
     def field(self, t, r):
         """
