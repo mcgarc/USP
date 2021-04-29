@@ -4,6 +4,30 @@ import scipy.constants as spc
 
 from USP import wire
 from USP import parameter
+from USP import consts
+
+class TestInfiniteWireMethods(unittest.TestCase):
+    """
+    Test fields for wires of infinite length
+    """
+
+    # TODO
+    # Test direction
+    # Test current setting
+
+    def test_x_wire_field(self):
+        """
+        Basic test for infinite wire in X direction
+        """
+        x_wire_1 = wire.WireInfiniteX(1, [0, 0, 0])
+        position = np.array([0, 1, 0])
+        expected_mag = consts.u_0 / (2 * np.pi)
+        expected_direction = np.array([0, 0, 1])
+        np.testing.assert_array_equal(
+                x_wire_1.field(0, position),
+                expected_mag * expected_direction
+                )
+
 
 class TestWireSegmentMethods(unittest.TestCase):
     """
