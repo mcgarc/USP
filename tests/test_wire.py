@@ -30,13 +30,38 @@ class TestInfiniteWireMethods(unittest.TestCase):
         Basic test for infinite wire in X direction
         """
         x_wire_1 = wire.WireInfiniteX(1, [0, 0, 0])
-        position = np.array([0, 1, 0])
         expected_mag = consts.u_0 / (2 * np.pi)
+        # In y
+        r = np.array([0, 1, 0])
         expected_direction = np.array([0, 0, 1])
         np.testing.assert_array_equal(
-                x_wire_1.field(0, position),
+                x_wire_1.field(0, r),
                 expected_mag * expected_direction
                 )
+        # In z
+        r = np.array([0, 0, -1])
+        expected_direction = np.array([0, 1, 0])
+        np.testing.assert_array_equal(
+                x_wire_1.field(0, r),
+                expected_mag * expected_direction,
+                )
+        # In y and z
+        r = np.array([0, -1, 1])
+        expected_mag /= np.sqrt(2)
+        expected_direction = np.array([0, -1, -1]) / np.sqrt(2)
+        np.testing.assert_array_almost_equal(
+                x_wire_1.field(0, r),
+                expected_mag * expected_direction
+                )
+#        # 2 units away
+#        r = np.array([0, 0, -2])
+#        expected_mag/=np.sqrt(2)
+#        expected_direction = np.array([0, 1, 0])
+#        np.testing.assert_array_equal(
+#                x_wire_1.field(0, r),
+#                expected_mag * expected_direction
+#                )
+
 
 
 class TestWireSegmentMethods(unittest.TestCase):
