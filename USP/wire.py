@@ -69,6 +69,26 @@ class WireInfiniteX(WireInfinite):
         field_mag_norm = consts.u_0 * current / (2*np.pi*r_prime_sqd)
         return  field_mag_norm * field_direction
 
+class WireInfiniteY(WireInfinite):
+    """
+    Infinite wire parallel to Y
+    """
+
+    def __init__(self, current, position):
+        super().__init__(current, position, None)
+        self._position[1] = 0
+
+    def field(self, t, r):
+        current = self._current.value(t)
+        # Vector from wire to point
+        r[1] = 0
+        r_prime = r - self._position
+        r_prime_sqd = np.dot(r_prime, r_prime)
+        # Field direction
+        field_direction = np.array([-r_prime[2], 0, r_prime[0]])
+        field_mag_norm = consts.u_0 * current / (2*np.pi*r_prime_sqd)
+        return  field_mag_norm * field_direction
+
 class WireSegment:
     """
     Simulates a segment of straight wire. Initialise with a start and end (3
