@@ -158,9 +158,8 @@ class ClusterTrapStatic(AbstractTrap):
                 'ClusterTrap must have argument cluster of type WireCluster'
                 )
         if not isinstance(bias, StaticField):
-            # TODO handle non-lists properly
             # Try converting an array to bias
-            bias = utils.clean_vector(bias)
+            bias = utils.clean_vector(bias, 3)
             bias = StaticField(bias)
         self.cluster = cluster
         self.bias = bias
