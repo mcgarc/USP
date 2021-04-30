@@ -77,16 +77,12 @@ void wire_segment_field (
   // Find direction of B field
   double B[3] = {0, 0, 0};
   cross(B, w, R);
-  printf_vec(w);
-  printf_vec(R);
-  printf_vec(B);
   // Find magnitude of B field (excluding current * u_0 / 4 pi)
   // This also includes normalisation for direction
   double B_mag = (cos_start + cos_end) / (R_mag * R_mag * w_mag);
   scalar_mult(B, B_mag, B);
   for (int i=0; i<3; i++) {
     output[i] = B[i];
-    printf("%f", B[i]);
   }
 };
 
@@ -97,6 +93,5 @@ int main() {
   double start[3] = {-1, 0, 0};
   double end[3] = {1, 0, 0};
   wire_segment_field(output, r, w, start, end);
-  printf_vec(output);
   return 0;
 }
