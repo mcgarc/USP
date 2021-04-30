@@ -16,8 +16,8 @@ clean_direction_index
 """
 
 import numpy as np
-import math
 import csv
+from math import sqrt
 
 DX = 1E-10
 
@@ -43,7 +43,7 @@ def three_vector_norm(a):
     """
     Returns the magnitude of a three vector.
     """
-    return math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+    return sqrt(a[0]**2 + a[1]**2 + a[2]**2)
 
 def clean_vector(vector, length=3, cast_type=None):
     """
