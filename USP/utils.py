@@ -16,9 +16,34 @@ clean_direction_index
 """
 
 import numpy as np
+import math
 import csv
 
 DX = 1E-10
+
+def three_vector_cross(a, b):
+    """
+    Cross product of two 3 vectors. Returns numpy array.
+    """
+    x = a[1]*b[2] - a[2]*b[1]
+    y = a[2]*b[0] - a[0]*b[2]
+    z = a[0]*b[1] - b[1]*a[0]
+    return np.array([x, y, z])
+
+def three_vector_dot(a, b):
+    """
+    Dot product of two 3 vectors.
+    """
+    tot = 0
+    for _ in range(3):
+        tot += a[_] * b[_]
+    return tot
+
+def three_vector_norm(a):
+    """
+    Returns the magnitude of a three vector.
+    """
+    return math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
 
 def clean_vector(vector, length=3, cast_type=None):
     """
