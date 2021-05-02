@@ -11,7 +11,8 @@ Written by Cameron McGarry
 1. Pull files to local repository
 2. (Recommended) Create and activate virtual environment
 3. `pip install -r requirements`
-4. Enjoy!
+4. `cc -fPIC -shared -o USP/wire_segment_fn.so USP/wire_segment_fn.c`
+5. Enjoy!
 
 ## Test
 

@@ -9,6 +9,7 @@ results/
 *.ipynb
 .ipynb_checkpoints/
 runscript.py
+USP/*.so
 
 # My workflow
 runscript.py
