@@ -5,7 +5,7 @@ from USP.field import StaticField
 
 from USP import parameter
 from USP import consts
-from USP import utils
+from USP.utils import *
 from USP import figs
 
 class AbstractPotentialTrap:
@@ -42,7 +42,7 @@ class AbstractTrap:
         """
         Return the trap potential at position r and time t
         """
-        return np.linalg.norm(self.field(t, r))
+        return three_vector_norm(self.field(t, r))
 
 class FieldTrap(AbstractTrap):
     """
@@ -159,7 +159,7 @@ class ClusterTrapStatic(AbstractTrap):
                 )
         if not isinstance(bias, StaticField):
             # Try converting an array to bias
-            bias = utils.clean_vector(bias, 3)
+            bias = clean_vector(bias, 3)
             bias = StaticField(bias)
         self.cluster = cluster
         self.bias = bias
