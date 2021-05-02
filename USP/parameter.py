@@ -190,6 +190,10 @@ class RampParameter(StepParameter):
         """
         if len(self.times) != 2*len(self.values) + 2:
             raise ValueError('Mismatched values and time lengths')
+        if len(self.times) <= 6:
+            warnings.warn(
+            'This class is inefficient, consider using a specific ramp class.'
+            )
 
     @staticmethod
     def value_ramp(v_i, v_f, t_i, t_f, t):
@@ -203,6 +207,7 @@ class RampParameter(StepParameter):
     def value(self, t):
         """
         """
+        #return self.values[0]
         cond_list = [self.times[i] <= t and t <= self.times[i+1] for i in range(len(self._times) - 1)] 
         cond_list = [t < self.times[0]] + cond_list + [t > self.times[-1]]
         values = [0] + self.values + [0]
@@ -219,6 +224,72 @@ class RampParameter(StepParameter):
         else:
             # Constant phase
             return values[int(region_index/2)]
+
+class RampParameterUpDown(RampParameter):
+    """
+    Simplified version of ramp parameter with four times and two values, do do
+    just one ramp up to a value and then back down.
+    """
+
+    def __init__(self, t1, t2, t3, t4, v2, v1=0):
+        """
+        Takes the four critical times, the second value and the first value
+        (defaults to 0).
+        """
+        self._t1 = t1
+        self._t2 = t2
+        self._t3 = t3
+        self._t4 = t4
+        self._v1 = v1
+        self._v2 = v2
+
+    def value(self, t):
+        if t <= self._t1:
+            return self._v1
+        elif t <= self._t2:
+            return self.value_ramp(self._v1, self._v2, self._t1, self._t2, t)
+        elif t <= self._t3:
+            return self._v2
+        elif t <= self._t4:
+            return self.value_ramp(self._v2, self._v1, self._t3, self._t4, t)
+        else:
+            return self._v1
+
+class RampParameterUpDown2(RampParameter):
+    """
+    Simplified version of ramp parameter with three ramps
+    """
+
+    def __init__(self, t1, t2, t3, t4, t5, t6, v2, v3, v1=0):
+        """
+        Takes the six critical times, the second and third values, and the
+        first value (defaults to 0).
+        """
+        self._t1 = t1
+        self._t2 = t2
+        self._t3 = t3
+        self._t4 = t4
+        self._t5 = t5
+        self._t6 = t6
+        self._v1 = v1
+        self._v2 = v2
+        self._v3 = v3
+
+    def value(self, t):
+        if t <= self._t1:
+            return self._v1
+        elif t <= self._t2:
+            return self.value_ramp(self._v1, self._v2, self._t1, self._t2, t)
+        elif t <= self._t3:
+            return self._v2
+        elif t <= self._t4:
+            return self.value_ramp(self._v2, self._v3, self._t3, self._t4, t)
+        elif t <=self._t5:
+            return self._v3
+        elif t <= self._t6:
+            return self.value_ramp(self._v3, self._v1, self._t5, self._t6, t)
+        else:
+            return self._v1
 
 class SigmoidParameter(AbstractParameterProfile):
     """
