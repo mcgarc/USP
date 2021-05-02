@@ -8,9 +8,10 @@ from USP.utils import *
 from math import pi
 
 from ctypes import *
-so_file = './USP/wire_fn.so'
+so_file = './USP/wire_segment_fn.so'
 
 fns = CDLL(so_file)
+fns.wire_segment_field.restype = c_double
 doubleArray3 = c_double * 3 # Define a 3-length array of doubles
 
 def clean_current(current):
@@ -164,11 +165,9 @@ class WireSegment:
         """
         field = doubleArray3(0, 0, 0)
         r = doubleArray3(*r)
-        w = doubleArray3(*self._wire_vector)
         start = doubleArray3(*self._start)
         end = doubleArray3(*self._end)
-        fns.wire_segment_field(field, r, w, start, end)
-        #print(list(field))
+        fns.wire_segment_field(field, r, start, end)
         res = np.array(field) * self.current.value(t) * u_0 / (4 * pi)
         return(res)
 
