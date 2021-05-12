@@ -229,15 +229,20 @@ class Simulation:
         kinetics = [p.kinetic_energy(t) for p in self._particles]
         return kinetics
 
-    def temperature(self, t):
+    def temperature(self, t, live=True):
         """
         Return the temperature of the cloud calculated from the KE at a given
         time
 
         Args:
         t: float, time of evaluation
+        live: bool, evaluate for live particles? (default true)
         """
-        kinetics = [p.kinetic_energy(t) for p in self.particles]
+        if live:
+            particles = self.live_particles(t)
+        else:
+            particles = self.particles
+        kinetics = [p.kinetic_energy(t) for p in particles]
         mean_kinetic = np.mean(np.array(kinetics))
         return 2 * mean_kinetic / (3 * consts.k_B)
 
