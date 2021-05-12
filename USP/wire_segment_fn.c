@@ -12,7 +12,7 @@ double norm( double *vec) {
 double dot( double *a, double *b) {
   double tot = 0;
   for (int i=0; i<3; i++) {
-    tot = tot + a[i] * b[i];
+    tot = tot + (a[i] * b[i]);
   }
   return tot;
 }
@@ -84,10 +84,9 @@ void wire_segment_field (
   double r_end_mag = norm(r_end);
   // Find the cosines
   double cos_start = dot(r_start, w);
-  // TODO Check ramifications of abs
-  cos_start = fabs(cos_start) / (r_start_mag * w_mag);
-  double cos_end = dot(r_end, w);
-  cos_end = fabs(cos_end) / (r_end_mag * w_mag);
+  cos_start = cos_start / (r_start_mag * w_mag);
+  double cos_end = -1*dot(r_end, w);
+  cos_end = cos_end / (r_end_mag * w_mag);
   // Find the closest point on the wire to r
   double m[3] = {0, 0, 0};
   scalar_mult(m, (r_start_mag * cos_start / w_mag), w);
@@ -104,7 +103,7 @@ void wire_segment_field (
   double B_mag = (cos_start + cos_end) / (R_mag * R_mag * w_mag);
   // Populate the output
   for (int i=0; i<3; i++) {
-    output[i] = B[i];
+    output[i] = B_mag * B[i];
   }
 };
 
