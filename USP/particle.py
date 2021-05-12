@@ -16,7 +16,7 @@ import numpy as np
 from itertools import count
 import desolver as de
 import desolver.backend as D
-from . import utils
+from .utils import *
 
 # FIXME This is only the second hackiest bit of code I have ever written...
 # Fixes bug with desolver trying to cast lists/ arrays/ ndarrays as floats
@@ -164,14 +164,14 @@ class Particle:
         t: float, time
         dir_index: int, 0, 1, 2 corresponds to x, y and z respectvely
         """
-        i = utils.clean_direction_index(dir_index)
+        i = clean_direction_index(dir_index)
         return np.array([self.r(t)[i], self.v(t)[i]])
 
     def set_r(self, r):
-        self._r = utils.clean_vector(r)
+        self._r = clean_vector(r)
 
     def set_v(self, v):
-        self._v = utils.clean_vector(v)
+        self._v = clean_vector(v)
 
     def set_m(self, m):
         self._m = m
@@ -257,9 +257,9 @@ class Particle:
         """
         r = Q[:3]
         v = Q[3:]
-        dvx_dt = -utils.grad(potential, t, r, 'x') / self.m
-        dvy_dt = -utils.grad(potential, t, r, 'y') / self.m
-        dvz_dt = -utils.grad(potential, t, r, 'z') / self.m
+        dvx_dt = -grad(potential, t, r, 'x') / self.m
+        dvy_dt = -grad(potential, t, r, 'y') / self.m
+        dvz_dt = -grad(potential, t, r, 'z') / self.m
         dQ_dt = np.array([
                 v[0],
                 v[1],
