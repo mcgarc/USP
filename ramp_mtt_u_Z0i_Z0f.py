@@ -6,23 +6,23 @@ import numpy as np
 
 
 # Times
-t_m3 = -200E-3 # Init time (t_-3)
-t_m2 = -150E-3 # MTT compression ramp start time
-t_m1 = -50E-3  # MTT compresion ramp end time
-t_0 = 0
+t_m3 = 0E-3 # Init time (t_-3)
+t_m2 = 50E-3 # MTT compression ramp start time
+t_m1 = 150E-3  # MTT compresion ramp end time
+t_0 = 200E-3
 t_settle = 50E-3 # Time for molecules to settle in QP
 t_1 = t_0 + t_settle
-t_ramp = 25E-3 # Duration of ramp QP to U
+t_ramp = 1E-4 # Duration of ramp QP to U
 t_2 = t_1 + t_ramp
-t_settle = 10E-3 # Time for molecules to settle in U
+t_settle = 34.9E-3 # Time for molecules to settle in U
 t_3 = t_2 + t_settle
-t_ramp = 25E-3 # Duration of ramp U to Z0i
+t_ramp = 1E-4 # Duration of ramp U to Z0i
 t_4 = t_3 + t_ramp
-t_settle = 10E-3 # Settle time in Z0i
+t_settle = 34.9E-3 # Settle time in Z0i
 t_5 = t_4 + t_settle
-t_ramp = 25E-3 # Duration of compression ramp
+t_ramp = 1E-4 # Duration of compression ramp
 t_6 = t_5 + t_ramp
-t_settle = 100E-3 # Settle time in Z0f
+t_settle = 124.9E-3 # Settle time in Z0f
 t_7 = t_6 + t_settle
 
 # params
@@ -79,11 +79,11 @@ sim = simulation.Simulation(
         dt,
         POINTS,
         events=loss_event,
-        process_no=8
+        process_no=6
         )
 sim.init_particles(PARTICLES, mass, r_gen, v_gen)
 
 sim.run()
 
 #sim.pickle(path=f'results/ramp_dt{dt}_N{PARTICLES}_T{T*1E6}uK.pickle')
-sim.pickle(path=f'results/ramp_short_dt{dt}_N{PARTICLES}_T{T*1E6}uK.pickle')
+sim.pickle(path=f'results/ramp_0.1ms_dt{dt}_N{PARTICLES}_T{T*1E6}uK.pickle')
