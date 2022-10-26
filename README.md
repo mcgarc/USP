@@ -17,6 +17,11 @@ potential can be used.  There are also tools for investigating the changing of
 potentials by ramping of currents, bias fields and so forth.
 
 
+## Examples
+
+Some example scripts are included to demonstrate intended use cases. It is
+recommended that simulation output is saved to a file and analysed separately.
+
 ## Potential improvements
 
 The project has been designed for the work I undertook at Imperial College
@@ -30,6 +35,9 @@ iterations.
 
 The integration method used is not necessarily the fastest. It may be possible
 to improve runtime by using a different method or using custom code.
+
+If you intend to use this codebase, or would like to make improvements then
+feel free to get in touch.
 
 ## Install
 
